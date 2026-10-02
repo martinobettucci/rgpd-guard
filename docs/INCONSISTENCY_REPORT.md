@@ -4,11 +4,6 @@ Défauts constatés hors de l'unité en cours, à résoudre par la boucle dédi�
 
 Origine : audit en lecture seule de la v0.1.0 avant la campagne de clôture, constats revérifiés à la main.
 
-## IR-13 Commande `/rgpd-guard:dashboard` et aide de connexion divergentes
-
-- Constat : `plugins/rgpd-guard/commands/dashboard.md` renvoie à `./runProd.sh token` seul, l'aide de la page d'accueil (`dashboard/src/i18n/fr.ts:28`) à `./runDev.sh token` puis aux autres lanceurs.
-- Concerne : RG-001, RG-013.
-
 ## IR-14 Références `@spec` sans section
 
 - Constat : `dashboard/src/pages/Sandbox.tsx:1`, `dashboard/src/i18n/index.ts:1`, `dashboard/index.html:2` et `dashboard/scripts/check-i18n.mjs:1` citent `docs/DESIGN_SYSTEM.md` sans chapitre, contrairement à CLAUDE.md §5 ; `scripts/check-spec-refs` ne contrôle que les références ancrées et laisse passer.

@@ -25,7 +25,7 @@ export const fr = {
   "home.engine.degraded": "Composants indisponibles",
   "home.engine.version": "Version",
   "home.token": "Jeton du moteur",
-  "home.token.help": "Affiché par ./runDev.sh token (ou runStaging.sh, runProd.sh).",
+  "home.token.help": "Affiché par ./runProd.sh token (ou ./runDev.sh token, ./runStaging.sh token selon l'environnement démarré).",
   "home.login": "Se connecter",
   "home.login.pending": "Connexion…",
   "home.login.error": "Jeton incorrect.",

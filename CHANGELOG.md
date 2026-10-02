@@ -34,6 +34,7 @@ Toutes les évolutions notables de RGPD Guard sont consignées ici.
 
 - Numéro de version précédé de `version:` pris pour une adresse IP publique.
 - Rechargement à chaud du moteur dev qui scrutait l'environnement virtuel monté et occupait un cœur en continu.
+- Accueil du tableau de bord et commande `/rgpd-guard:dashboard` : même indication pour obtenir le jeton (`./runProd.sh token`, ou le lanceur de l'environnement démarré).
 - SCHEMA.md aligné sur la migration (colonnes `id`, aucun événement `analyze`) et protégé par un test qui compare tables et colonnes documentées à la base migrée.
 - DAT : la règle des délais emboîtés vaut pour les hooks qui analysent un texte ; un test du client la vérifie à partir de `hooks.json`.
 - DAT et critère de RG-012 : routes de session (publiques, la lecture ne renvoie que l'état de connexion) et rétablissement de la politique documentés ; tests d'accès direct étendus aux écritures de la politique.

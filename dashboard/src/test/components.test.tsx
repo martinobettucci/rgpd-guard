@@ -1,6 +1,8 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/DESIGN_SYSTEM_APP.md
-// @verifies docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/BACKLOG.md#RG-001 | docs/DESIGN_SYSTEM_APP.md
+// @verifies docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/BACKLOG.md#RG-001 | docs/DESIGN_SYSTEM_APP.md
 // Composants : correspondance des décisions, texte annoté sans interprétation HTML, connexion refusée.
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
@@ -10,6 +12,7 @@ import { DecisionBadge } from "../components/DecisionBadge";
 import { decisionStyle } from "../lib/decisions";
 import type { Analysis } from "../lib/api";
 import { Home } from "../pages/Home";
+import { t } from "../i18n";
 import { AnnotatedText } from "../pages/Sandbox";
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -74,5 +77,17 @@ describe("accueil", () => {
     await userEvent.type(screen.getByLabelText("Jeton du moteur"), "faux");
     await userEvent.click(screen.getByRole("button", { name: "Se connecter" }));
     expect((await screen.findByRole("alert")).textContent).toContain("Jeton incorrect.");
+  });
+});
+
+// Commande du plugin, absente du conteneur du tableau de bord (seul dashboard/ y est monté) : test ignoré, jamais faux vert.
+const dashboardCommand = resolve(process.cwd(), "../plugins/rgpd-guard/commands/dashboard.md");
+
+describe("jeton de connexion", () => {
+  it.skipIf(!existsSync(dashboardCommand))("l'accueil et la commande /rgpd-guard:dashboard nomment les mêmes commandes", () => {
+    const tokenCommands = (text: string) => [...text.matchAll(/\.\/run(?:Dev|Staging|Prod)\.sh token/g)].map((m) => m[0]);
+    const command = readFileSync(dashboardCommand, "utf-8");
+    expect(tokenCommands(t("home.token.help"))).toEqual(["./runProd.sh token", "./runDev.sh token", "./runStaging.sh token"]);
+    expect(tokenCommands(command)).toEqual(tokenCommands(t("home.token.help")));
   });
 });
