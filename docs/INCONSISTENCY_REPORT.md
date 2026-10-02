@@ -4,13 +4,6 @@ Défauts constatés hors de l'unité en cours, à résoudre par la boucle dédi�
 
 Origine : audit en lecture seule de la v0.1.0 avant la campagne de clôture, constats revérifiés à la main.
 
-## IR-09 Variables d'environnement non documentées ou inutilisées
-
-- Constat :
-  - lues mais absentes du README : moteur `RGPD_GUARD_POLICY_FILE`, `_DEADLINE_MS`, `_MAX_NER_CHARS`, `_MAX_TEXT_CHARS`, `_BYPASS_PREFIX` (`config.py`), `_RELOAD`, `_LOG_LEVEL` (`__main__.py`) ; client `RGPD_GUARD_URL`, `_CONFIG`, `_FAIL_MODE`, `_PROFILE` (`plugins/rgpd-guard/scripts/common.sh`) ; tableau de bord `RGPD_GUARD_ENGINE_URL` (`vite.config.ts`) ; lanceurs `ENGINE_PORT`, `DASHBOARD_PORT`, `BUILD_CA_BUNDLE` (`scripts/stack.sh`) ;
-  - déclarées mais jamais lues : `models_dir` et `test_endpoints` (`config.py`), alors que `engine/Dockerfile` et `e2e/claude/harness.py` posent `RGPD_GUARD_MODELS_DIR`.
-- Concerne : RG-010, RG-018, README, fichiers `.env.example`.
-
 ## IR-10 Routes de session absentes du DAT, critère « `/health` seul public » inexact
 
 - Constat : le tableau du [DAT §10](DAT.md#api) omet `GET /v1/auth/session` et `POST /v1/policies/reset` (`api.py:223`, `api.py:271`) ; le critère de RG-012 affirme que `/health` est la seule route publique, alors que l'ouverture, la lecture et la fermeture de session le sont par nature.

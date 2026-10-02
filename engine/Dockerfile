@@ -42,8 +42,7 @@ ENV PATH=/opt/venv/bin:$PATH \
     HF_HOME=/models \
     HF_HUB_OFFLINE=1 \
     TRANSFORMERS_OFFLINE=1 \
-    RGPD_GUARD_DATA_DIR=/data \
-    RGPD_GUARD_MODELS_DIR=/models
+    RGPD_GUARD_DATA_DIR=/data
 WORKDIR /app
 EXPOSE 8742
 HEALTHCHECK --interval=10s --timeout=5s --start-period=180s --retries=6 \

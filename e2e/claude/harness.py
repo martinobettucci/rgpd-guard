@@ -67,7 +67,6 @@ def start_engine(tmp: Path, workspace: Path, profile: str = "rapide", detectors:
         "RGPD_GUARD_ALLOWED_HOSTS": "127.0.0.1,localhost",
         "RGPD_GUARD_HOST": "127.0.0.1",
         "RGPD_GUARD_PORT": str(port),
-        "RGPD_GUARD_MODELS_DIR": os.environ.get("RGPD_GUARD_MODELS_DIR", str(tmp / "models")),
     }
     log = open(tmp / "engine.log", "wb")  # noqa: SIM115 (fermé avec le processus)
     process = subprocess.Popen(  # noqa: S603

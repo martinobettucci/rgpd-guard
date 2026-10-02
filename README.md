@@ -128,7 +128,11 @@ Commandes du plugin : `/rgpd-guard:status`, `/rgpd-guard:scan <fichier>`, `/rgpd
 | Contrôles rapides du projet | `scripts/project-pre-commit --all` |
 | Validation du plugin et de la marketplace | `claude plugin validate plugins/rgpd-guard && claude plugin validate .` |
 
-## Variables d'environnement du moteur
+## Variables d'environnement
+
+Les fichiers `config/environments/*.env` (dev versionné, modèles `.example` commentés pour staging et prod) portent les valeurs passées aux conteneurs.
+
+### Moteur
 
 | Variable | Rôle | Obligatoire | Exemple |
 |---|---|---|---|
@@ -137,16 +141,51 @@ Commandes du plugin : `/rgpd-guard:status`, `/rgpd-guard:scan <fichier>`, `/rgpd
 | `RGPD_GUARD_ENV` | `dev`, `staging`, `prod` | non | `dev` |
 | `RGPD_GUARD_PROFILE` | profil par défaut | non | `equilibre` |
 | `RGPD_GUARD_ENABLED_DETECTORS` | composants chargés | non | `rules,secrets,spacy,laya,gliner` |
-| `RGPD_GUARD_DATA_DIR` | dossier de la base SQLite | non | `/data` |
+| `RGPD_GUARD_DATA_DIR` | dossier de la base SQLite et du dernier banc | non | `/data` |
+| `RGPD_GUARD_POLICY_FILE` | politique par défaut (YAML) ; à défaut, celle du paquet | non | `/etc/rgpd-guard/politique.yaml` |
 | `RGPD_GUARD_WORKSPACE_ROOT` | dossier lisible pour les mentions `@` et `/rgpd-guard:scan` | non | `/home/moi` |
 | `RGPD_GUARD_AUDIT_RETENTION_DAYS` | rétention du journal | non | `30` |
 | `RGPD_GUARD_AUDIT_PREVIEW` | conserver un aperçu masqué | non | `true` |
 | `RGPD_GUARD_VAULT_TTL_SECONDS` | durée de vie des pseudonymes | non | `43200` |
+| `RGPD_GUARD_BYPASS_PREFIX` | préfixe de contournement ponctuel d'un prompt | non | `#rgpd-ok` |
+| `RGPD_GUARD_DEADLINE_MS` | échéance d'une analyse ; au-delà, seuls les détecteurs sans modèle s'appliquent | non | `15000` |
+| `RGPD_GUARD_MAX_NER_CHARS` | taille maximale d'un texte soumis aux modèles (au-delà : règles seules, résultat partiel) | non | `20000` |
+| `RGPD_GUARD_MAX_TEXT_CHARS` | taille au-delà de laquelle une sortie d'outil est remplacée par un avis | non | `2000000` |
 | `RGPD_GUARD_ALLOWED_HOSTS` | en-têtes Host acceptés | non | `127.0.0.1,localhost,engine` |
 | `RGPD_GUARD_CORS_ORIGINS` | origines autorisées à modifier | non | `http://127.0.0.1:8743` |
-| `RGPD_GUARD_HOST`, `RGPD_GUARD_PORT` | écoute | non | `0.0.0.0`, `8742` |
 | `RGPD_GUARD_TORCH_THREADS` | fils CPU de torch (Laya, GLiNER) | non | `4` |
-| `HF_HOME`, `HF_HUB_OFFLINE` | cache local des modèles, interdiction de tout téléchargement | oui avec modèles | `/models`, `1` |
+| `RGPD_GUARD_HOST`, `RGPD_GUARD_PORT` | écoute | non | `0.0.0.0`, `8742` |
+| `RGPD_GUARD_RELOAD` | rechargement à chaud du code (dev) | non | `false` |
+| `RGPD_GUARD_LOG_LEVEL` | niveau des journaux | non | `INFO` |
+| `HF_HOME`, `HF_HUB_OFFLINE` | cache local des modèles Laya et GLiNER, interdiction de tout téléchargement | oui avec modèles | `/models`, `1` |
+
+### Client de hook (plugin)
+
+Les options du plugin priment ; à défaut, le client lit ces variables dans l'environnement de Claude Code, puis le fichier écrit par le dernier lanceur.
+
+| Variable | Rôle | Défaut |
+|---|---|---|
+| `RGPD_GUARD_URL` | adresse du moteur | `http://127.0.0.1:8742` |
+| `RGPD_GUARD_TOKEN` | jeton du moteur | valeur du fichier du lanceur |
+| `RGPD_GUARD_FAIL_MODE` | `closed` ou `open` | `closed` |
+| `RGPD_GUARD_PROFILE` | profil demandé au moteur, même sens que côté moteur | profil du moteur |
+| `RGPD_GUARD_CONFIG` | fichier écrit par les lanceurs | `~/.config/rgpd-guard/engine.env` |
+
+### Lanceurs et construction
+
+| Variable | Rôle | Défaut |
+|---|---|---|
+| `ENGINE_PORT`, `DASHBOARD_PORT` | ports publiés sur 127.0.0.1 | dev et prod `8742`, `8743` ; staging `18742`, `18743` |
+| `RGPD_GUARD_WORKSPACE_ROOT` | dossier personnel monté en lecture seule dans le moteur | `$HOME` |
+| `BUILD_CA_BUNDLE` | paquet CA d'un proxy TLS, transmis en secret de construction | `config/ca/empty.pem` (vide) |
+| `BUILD_HTTPS_PROXY` | proxy HTTPS utilisé pendant la construction | aucun |
+| `BUILD_NETWORK` | réseau de construction (`host` derrière un proxy local) | `default` |
+
+### Tableau de bord (serveur Vite de développement)
+
+| Variable | Rôle | Défaut |
+|---|---|---|
+| `RGPD_GUARD_ENGINE_URL` | moteur vers lequel `/api` est relayé | `http://127.0.0.1:8742` |
 
 ## Structure du dépôt
 

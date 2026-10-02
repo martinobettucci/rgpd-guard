@@ -34,6 +34,7 @@ Toutes les évolutions notables de RGPD Guard sont consignées ici.
 
 - Numéro de version précédé de `version:` pris pour une adresse IP publique.
 - Rechargement à chaud du moteur dev qui scrutait l'environnement virtuel monté et occupait un cœur en continu.
+- Variables d'environnement : README complété (moteur, client de hook, lanceurs, serveur Vite) et protégé par un test ; réglages `models_dir` et `test_endpoints` jamais lus retirés.
 - Chiffres du banc d'évaluation cités par le README et le DAT : remplacés par ceux du banc rejoué après le masquage avant Laya et le passage à spaCy 3.8.0 (latences p50 394 ms en `equilibre`, 496 ms en `max`).
 - Page Moteurs : le temps de chargement n'apparaissait pour aucun composant (masqué par la liste des modèles, et non mesuré pour `rules` et `secrets`) ; il est désormais mesuré et affiché pour chaque composant prêt.
 - Tableau de bord : une durée mesurée sous la demi-milliseconde (p50 du profil Rapide, réinjections du journal) s'affichait « 0 » ; elle s'écrit désormais « < 1 ».
