@@ -126,7 +126,7 @@ check "staging up : client vers 18742 avec le jeton staging" bash -c "grep -qx '
 
 # 5. Démarrage dev avec modèles déjà en cache : build, démarrage, seed rejoué par les hooks.
 repo="$(new_repo dev-up)"
-mkdir -p "$repo/models-cache/hub/models--urchade--gliner_multi_pii-v1" "$repo/models-cache/hub/models--convaiinnovations--laya-multilingual"
+mkdir -p "$repo/.cache/models/hub/models--urchade--gliner_multi_pii-v1" "$repo/.cache/models/hub/models--convaiinnovations--laya-multilingual"
 launch "$repo" runDev.sh up
 check "dev up : construction du moteur" grep -qx "compose -p rgpd-guard-dev -f docker-compose.yml -f docker-compose.dev.yml build engine" "$repo/calls"
 check "dev up : modèles en cache non retéléchargés" bash -c "! grep -q 'model_store' '$repo/calls'"
@@ -134,11 +134,11 @@ check "dev up : seed rejoué" grep -qx "compose -p rgpd-guard-dev -f docker-comp
 check "dev up : client vers 8742 avec le jeton seedé" grep -qx "RGPD_GUARD_TOKEN=dev-token-rgpd-guard" "$repo/home/.config/rgpd-guard/engine.env"
 check "dev up : banc existant non relancé" bash -c "grep -q 'exec -T engine test -f /data/bench/latest.json' '$repo/calls' && ! grep -q 'rgpd_guard.bench' '$repo/calls'"
 repo="$(new_repo dev-banc)"
-mkdir -p "$repo/models-cache/hub/models--urchade--gliner_multi_pii-v1" "$repo/models-cache/hub/models--convaiinnovations--laya-multilingual"
+mkdir -p "$repo/.cache/models/hub/models--urchade--gliner_multi_pii-v1" "$repo/.cache/models/hub/models--convaiinnovations--laya-multilingual"
 FAIL_MATCH="test -f /data/bench/latest.json" launch "$repo" runDev.sh up
 check "dev up : banc absent, banc lancé une fois" test "$(grep -c 'rgpd_guard.bench' "$repo/calls")" -eq 1
 
-# 6. Dev sans modèles : téléchargement unique dans models-cache/ par l'image du moteur.
+# 6. Dev sans modèles : téléchargement unique dans .cache/models/ par l'image du moteur.
 repo="$(new_repo dev-modeles)"
 launch "$repo" runDev.sh up
 check "dev up : téléchargement des modèles épinglés" grep -q "rgpd-guard-engine:dev python -m rgpd_guard.model_store /models-rw" "$repo/calls"

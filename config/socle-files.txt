@@ -1,0 +1,28 @@
+# Fichiers de méthode importés sans modification de P2Enjoy/software-factory-base@886ba5a28a834a5f08fd1a01ec8dd78787317559.
+# Format : empreinte de blob git, chemin. Contrôlé par scripts/project-pre-commit (BACKLOG RG-000).
+# Une mise à jour du socle remplace ces lignes par celles de la nouvelle révision amont.
+bbb22f5dbbe5c48d0a53e1436c526403f3bf4f98 .claude/agents/factory-explorer.md
+3f9cdbb66410beddadf4f3262411a92bb9fdedc7 .claude/agents/factory-resolver.md
+08a631dea07eeacae2b2fd4dad4fe91df405c77a .claude/agents/factory-reviewer.md
+784517ae4131ac5e1018e07c0ee8daba3c5bbb90 .claude/agents/factory-verifier.md
+4308ee74890efe5fcd955be1845ea27b3a454366 .codex/agents/factory-explorer.toml
+b7f83f19c8466682be4e6617e18d66743d0f1a4f .codex/agents/factory-resolver.toml
+4401bb0399f07087b908c058d71edf471007508b .codex/agents/factory-reviewer.toml
+3cf98960d7a7e2e525d99017b87e3e9a425d9449 .codex/agents/factory-verifier.toml
+7474200ce8cdf282d96a6f20b0359bf989d678a1 .codex/config.toml
+baffcd6765010d52bda1a5fb47fbc1aecb0c65ad .githooks/commit-msg
+423ff0f644c5f6b9823f8cc94414b28b73ab47e5 .githooks/pre-commit
+6b8204f5a54fe5768cef45dcb81d5ac402361a78 .githooks/pre-push
+ad3d68de6400e6f51aa9bc05e0ef058e9b8a6e50 .gitignore
+1861c6957764c9e4213ed632b4a48beec16ec60a AGENTS.md
+7e3779b50a99b7f128c8a96ba1d477fd31212395 CLAUDE.md
+715d2d3c1109e84d5a8d1e33edb99245a6a66e46 docs/.routine
+56896770c4c4afa572749c12d0af9afa2fcdf365 docs/CloudWorker.md
+c830720071279ad320cfb78dcf68941f76c4fec8 docs/DESIGN_SYSTEM.md
+a2512942f32bcef7796b57832a4c879f4a70889c scripts/git-hooks/check-message
+b39ae5fae247f00993582be8688d02aadc6a7f86 scripts/git-hooks/check-push
+de37368a34f8834c7fbde7ad26066aa3fce272bc scripts/git-hooks/check-session
+6c18ee9254d363a1a2cfcec564b84444e7734aee scripts/git-hooks/check-staged
+dbe349d6bdfd952896b952bc76b7a6625f1e1cde scripts/git-hooks/install
+8f5cf961e45326cc7c31f65edc3d158f1070c262 scripts/git-hooks/lib.sh
+2ca9216531332a00dc1c96d25c93a91c1de8dd92 tests/git-hooks/test-hooks

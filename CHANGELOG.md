@@ -26,12 +26,14 @@ Toutes les évolutions notables de RGPD Guard sont consignées ici.
 
 ### Modifié
 
+- `scripts/project-pre-commit` vérifie que les fichiers importés du socle restent identiques à leurs empreintes amont (`config/socle-files.txt`).
 - Erreurs de validation de l'API traduites en français par type d'erreur ; message d'expression régulière invalide sans texte anglais.
 
 ### Corrigé
 
 - Numéro de version précédé de `version:` pris pour une adresse IP publique.
 - Rechargement à chaud du moteur dev qui scrutait l'environnement virtuel monté et occupait un cœur en continu.
+- `.gitignore` du socle modifié par des règles du projet : restauré à l'identique de l'amont, règles du projet déplacées dans des `.gitignore` imbriqués, caches locaux regroupés sous `.cache/` (`models-cache/` devient `.cache/models/`).
 - Construction impossible depuis un clone neuf : le paquet CA vide utilisé par défaut était exclu par le `.gitignore` ; il est désormais suivi sous `config/ca/empty.pem`.
 - Tableau de bord : liste des types détectés décalée, barre de navigation mobile incomplète, en-tête mobile empilé, faux espace avant la ponctuation dans le texte annoté.
 

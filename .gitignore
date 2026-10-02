@@ -248,21 +248,3 @@ coverage/
 # poetry.lock
 # uv.lock
 # requirements*.txt
-
-# =============================================================================
-# RGPD Guard (projet)
-# =============================================================================
-# Fichiers d'environnement réels : seuls dev.env et les modèles .example sont versionnés.
-config/environments/*.env
-!config/environments/dev.env
-# Données locales, corpus générés (peuvent contenir de faux secrets construits), modèles téléchargés.
-/data/
-seeds/out/
-models-cache/
-# Artefacts de preuve E2E et de banc d'évaluation.
-e2e/artifacts/
-e2e/playwright/test-results/
-e2e/playwright/playwright-report/
-# Sorties Playwright volumineuses (les captures JPEG de référence sont versionnées).
-e2e/playwright/videos/
-e2e/playwright/node_modules/

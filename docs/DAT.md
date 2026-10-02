@@ -251,7 +251,7 @@ Le journal d'audit est lui même un traitement de données personnelles (minimis
 | prod | `docker-compose.yml` + `docker-compose.prod.yml`, `config/environments/prod.env` | aucune donnée seedée |
 
 Images :
-- `engine` : Python 3.12 slim, environnement virtuel construit par uv (torch CPU), utilisateur non root ; cible `prod` avec les modèles intégrés dans `/models` (`HF_HOME`, `HF_HUB_OFFLINE=1`), cible `dev` avec les dépendances de test et le code monté. En dev, les modèles sont téléchargés une fois dans `models-cache/` (ignoré par git) par le lanceur et montés en lecture seule, pour ne pas reconstruire 2 Go à chaque modification.
+- `engine` : Python 3.12 slim, environnement virtuel construit par uv (torch CPU), utilisateur non root ; cible `prod` avec les modèles intégrés dans `/models` (`HF_HOME`, `HF_HUB_OFFLINE=1`), cible `dev` avec les dépendances de test et le code monté. En dev, les modèles sont téléchargés une fois dans `.cache/models/` (dossier `.cache/` ignoré par le `.gitignore` du socle) par le lanceur et montés en lecture seule, pour ne pas reconstruire 2 Go à chaque modification.
 - `dashboard` : cible `dev` (serveur Vite), cible `prod` (build statique servi par nginx non root, en-têtes de sécurité, relais `/api` vers le moteur).
 - Le dossier racine de travail (`RGPD_GUARD_WORKSPACE_ROOT`, défaut : dossier personnel) est monté en lecture seule au même chemin dans le moteur, pour les mentions `@` et `/rgpd-guard:scan`.
 - Construction derrière un proxy TLS : `BUILD_CA_BUNDLE` (fichier PEM transmis en secret de construction) et `BUILD_NETWORK=host`, tous deux facultatifs. Sans proxy, le secret pointe sur `config/ca/empty.pem`, fichier vide suivi par git : un clone neuf construit sans réglage.

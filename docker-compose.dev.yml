@@ -10,7 +10,7 @@ services:
     volumes:
       - ./engine:/app
       - ./seeds:/seeds
-      - ./models-cache:/models:ro
+      - ./.cache/models:/models:ro
       - engine-data:/data
     ports:
       - "127.0.0.1:${ENGINE_PORT:-8742}:8742"

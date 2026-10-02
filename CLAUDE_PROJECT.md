@@ -21,6 +21,8 @@ Plugin Claude Code qui bloque ou pseudonymise localement, sur CPU, les données 
 - Traçabilité : `@spec docs/BACKLOG.md#RG-xxx | docs/DAT.md#ancre` en tête de chaque fichier de code, `@verifies` en plus pour les tests. Les ancres du DAT sont les identifiants explicites `<a id="...">`.
 - Jetons de pseudonymisation : `⟦TYPE_N⟧` (U+27E6, U+27E7). Ne jamais changer ce format sans mettre à jour le moteur, le contexte injecté à Claude et le manuel.
 - Données de test et de démonstration **100 % synthétiques**. Aucun secret d'apparence réelle écrit en dur : les fixtures de secrets sont assemblées à l'exécution à partir de fragments (le hook pre-commit et la protection de push de GitHub les refuseraient, à juste titre).
+- Fichiers du socle repris **sans modification** : leurs empreintes amont sont figées dans `config/socle-files.txt` et contrôlées par `scripts/project-pre-commit`. Une règle propre au projet va dans un fichier compagnon : `CLAUDE_PROJECT.md`, `docs/DESIGN_SYSTEM_APP.md`, ou un `.gitignore` imbriqué à côté de ce qu'il ignore (`config/environments/`, `seeds/`, `e2e/playwright/`).
+- Données locales jetables sous `.cache/` (déjà ignoré par le socle) : modèles téléchargés `.cache/models/`, base et banc d'une exécution hors conteneur `.cache/data/`.
 - Fichiers d'environnement dans `config/environments/` : `dev.env` versionné et sans valeur sensible ; `staging.env` et `prod.env` ignorés par git, construits à partir des modèles `.example` commentés. Jamais de `.env` à la racine (refusé par le hook du socle).
 - Ports publiés uniquement sur 127.0.0.1 : moteur 8742, dashboard 8743 ; staging 18742, 18743. Le port 8765 est réservé de fait par d'autres outils locaux de protection.
 

@@ -4,12 +4,6 @@ Défauts constatés hors de l'unité en cours, à résoudre par la boucle dédi�
 
 Origine : audit en lecture seule de la v0.1.0 avant la campagne de clôture, constats revérifiés à la main.
 
-## IR-02 `.gitignore` du socle modifié
-
-- Constat : une section « RGPD Guard (projet) » de 18 lignes a été ajoutée à la fin du `.gitignore` importé (commit `24edff6`). Le socle le présente comme une base générique globale et RG-000 exige un import sans modification.
-- Mesure : comparaison des empreintes avec `P2Enjoy/software-factory-base@886ba5a` (HEAD amont) : 24 fichiers de méthode identiques, `.gitignore` différent.
-- Concerne : RG-000, séparation global et local (CLAUDE.md §27).
-
 ## IR-03 `bench` échoue hors de l'environnement de développement
 
 - Constat : `cmd_bench` (`scripts/stack.sh:169`) exécute `/seeds/generate.py` dans le conteneur du moteur ; staging et prod ne montent pas `/seeds` (`docker-compose.staging.yml`, `docker-compose.prod.yml`) et l'image prod n'a pas Faker (`engine/Dockerfile`, `--no-dev`). BACKLOG RG-018, DAT et CLAUDE_PROJECT annoncent pourtant les mêmes sous-commandes pour les trois lanceurs, alors que `seed` est refusé en prod et `test`, `e2e` réservés au dev.

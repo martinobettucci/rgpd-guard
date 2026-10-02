@@ -110,6 +110,18 @@ if [[ "${#python_files[@]}" -gt 0 ]]; then
   fi
 fi
 
+# Fichiers du socle : identiques aux empreintes amont figées dans config/socle-files.txt (critère de RG-000).
+# Les règles propres au projet vivent dans des fichiers compagnons (CLAUDE_PROJECT.md, .gitignore imbriqués).
+while read -r expected path; do
+  [[ -n "$expected" && "$expected" != \#* ]] || continue
+  if [[ "$mode" == "all" ]]; then
+    actual="$(git hash-object -- "$path" 2>/dev/null || true)"
+  else
+    actual="$(git rev-parse -q --verify ":$path" 2>/dev/null || true)"
+  fi
+  [[ "$actual" == "$expected" ]] || report "$path diffère du socle importé (config/socle-files.txt) ; placer la règle propre au projet dans un fichier compagnon"
+done < config/socle-files.txt
+
 # Références de traçabilité : chaque docs/FICHIER.md#ancre citée doit exister.
 if [[ "$mode" == "all" ]]; then
   scripts/check-spec-refs || report "références @spec / @verifies invalides"

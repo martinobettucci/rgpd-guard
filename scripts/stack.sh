@@ -85,13 +85,13 @@ write_client_config() {
 }
 
 ensure_models_cache() {
-  # Dev : modèles téléchargés une fois dans models-cache/ puis montés en lecture seule.
+  # Dev : modèles téléchargés une fois dans .cache/models/ puis montés en lecture seule.
   [[ "$STACK_ENV" == "dev" ]] || return 0
-  if [[ -d models-cache/hub/models--urchade--gliner_multi_pii-v1 && -d models-cache/hub/models--convaiinnovations--laya-multilingual ]]; then
+  if [[ -d .cache/models/hub/models--urchade--gliner_multi_pii-v1 && -d .cache/models/hub/models--convaiinnovations--laya-multilingual ]]; then
     return 0
   fi
-  say "Téléchargement des modèles CPU épinglés dans models-cache/ (environ 1,9 Go, une seule fois)…"
-  mkdir -p models-cache
+  say "Téléchargement des modèles CPU épinglés dans .cache/models/ (environ 1,9 Go, une seule fois)…"
+  mkdir -p .cache/models
   local ca_args=()
   if [[ -s "$BUILD_CA_BUNDLE" ]]; then
     ca_args=(-v "$BUILD_CA_BUNDLE:/ca.pem:ro" -e SSL_CERT_FILE=/ca.pem -e REQUESTS_CA_BUNDLE=/ca.pem)
@@ -100,7 +100,7 @@ ensure_models_cache() {
   [[ "$BUILD_NETWORK" == "host" ]] && net="host"
   docker run --rm --network "$net" -u "$(id -u):$(id -g)" -e HOME=/tmp -e HF_HUB_OFFLINE=0 \
     -e HTTPS_PROXY="$BUILD_HTTPS_PROXY" -e https_proxy="$BUILD_HTTPS_PROXY" \
-    -v "$REPO/models-cache:/models-rw" ${ca_args[@]+"${ca_args[@]}"} rgpd-guard-engine:dev python -m rgpd_guard.model_store /models-rw
+    -v "$REPO/.cache/models:/models-rw" ${ca_args[@]+"${ca_args[@]}"} rgpd-guard-engine:dev python -m rgpd_guard.model_store /models-rw
 }
 
 wait_healthy() {

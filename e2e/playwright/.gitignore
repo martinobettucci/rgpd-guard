@@ -1,0 +1,4 @@
+# Sorties Playwright volumineuses ; les captures JPEG de référence (captures/) restent versionnées.
+test-results/
+playwright-report/
+videos/

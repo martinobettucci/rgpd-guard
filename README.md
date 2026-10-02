@@ -51,7 +51,7 @@ git config --local user.name "<nom du responsable>"
 git config --local user.email "<adresse du responsable>"
 scripts/git-hooks/install
 cd engine && uv sync --group dev --extra nlp --extra laya --extra gliner
-uv run python -m rgpd_guard.model_store ../models-cache   # environ 1,9 Go, une seule fois
+uv run python -m rgpd_guard.model_store ../.cache/models   # environ 1,9 Go, une seule fois
 ```
 
 ## Lancer la pile (Docker)
@@ -64,7 +64,7 @@ uv run python -m rgpd_guard.model_store ../models-cache   # environ 1,9 Go, une 
 
 Sous-commandes communes : `up`, `down`, `logs`, `status`, `seed` (dev et staging), `test` (dev), `e2e` (dev), `bench`, `token`, `reset` (confirmation exigée hors dev).
 
-- Le premier `./runDev.sh up` télécharge les modèles CPU épinglés dans `models-cache/` (environ 1,9 Go, une fois), puis démarre la pile, attend le chargement des modèles (environ une minute) et rejoue le corpus seedé à travers les vrais hooks.
+- Le premier `./runDev.sh up` télécharge les modèles CPU épinglés dans `.cache/models/` (environ 1,9 Go, une fois), puis démarre la pile, attend le chargement des modèles (environ une minute) et rejoue le corpus seedé à travers les vrais hooks.
 - Chaque `up` écrit l'adresse et le jeton de l'environnement démarré dans `~/.config/rgpd-guard/engine.env` (mode 600) : le plugin vise automatiquement le dernier environnement démarré.
 - En staging et en prod, `config/environments/<env>.env` est créé à partir du modèle `.example` commenté, et le jeton comme la clé HMAC sont générés s'ils sont vides.
 - Le dossier personnel est monté en lecture seule dans le moteur (mentions `@` et `/rgpd-guard:scan`) ; le restreindre avec `RGPD_GUARD_WORKSPACE_ROOT=/chemin ./runProd.sh up`.
@@ -76,8 +76,8 @@ Sous-commandes communes : `up`, `down`, `logs`, `status`, `seed` (dev et staging
 ```bash
 cd engine
 RGPD_GUARD_TOKEN=dev-token-local RGPD_GUARD_HMAC_KEY=dev-hmac-local \
-RGPD_GUARD_DATA_DIR=../data RGPD_GUARD_WORKSPACE_ROOT="$HOME" RGPD_GUARD_HOST=127.0.0.1 \
-HF_HOME=../models-cache HF_HUB_OFFLINE=1 \
+RGPD_GUARD_DATA_DIR=../.cache/data RGPD_GUARD_WORKSPACE_ROOT="$HOME" RGPD_GUARD_HOST=127.0.0.1 \
+HF_HOME=../.cache/models HF_HUB_OFFLINE=1 \
 uv run python -m rgpd_guard
 ```
 
@@ -88,7 +88,7 @@ Le moteur écoute sur http://127.0.0.1:8742 (`GET /health` pour vérifier) ; le 
 ```bash
 cd engine
 uv run python ../seeds/generate.py                       # corpus déterministe dans seeds/out/
-HF_HOME=../models-cache HF_HUB_OFFLINE=1 uv run python -m rgpd_guard.bench ../seeds/out/corpus.jsonl --out ../data/bench/latest.json
+HF_HOME=../.cache/models HF_HUB_OFFLINE=1 uv run python -m rgpd_guard.bench ../seeds/out/corpus.jsonl --out ../.cache/data/bench/latest.json
 ```
 
 Résultats de référence (4 vCPU) : profil `rapide` F1 0,68 en moins d'une milliseconde (aucun nom de personne), `equilibre` F1 0,98 en 0,75 s (p50), `max` F1 0,99 en 1,0 s (p50). Détail dans [le journal](docs/JOURNAL.md).
@@ -119,7 +119,7 @@ Commandes du plugin : `/rgpd-guard:status`, `/rgpd-guard:scan <fichier>`, `/rgpd
 | Parcours E2E du tableau de bord (Playwright, captures JPEG et vidéos webm) | `./runDev.sh e2e` |
 | Tests unitaires et API du moteur | `cd engine && uv run pytest` |
 | Tableau de bord : typage, tests, textes, contrastes | `cd dashboard && npm run typecheck && npm test && npm run check:i18n && npm run check:contrast` |
-| Tests d'inférence sur les modèles réels | `cd engine && HF_HOME=../models-cache HF_HUB_OFFLINE=1 uv run pytest -m models` |
+| Tests d'inférence sur les modèles réels | `cd engine && HF_HOME=../.cache/models HF_HUB_OFFLINE=1 uv run pytest -m models` |
 | Lint, format, typage | `cd engine && uv run ruff check . && uv run ruff format --check . && uv run mypy` |
 | Contrats du client de hook | `cd engine && uv run pytest ../e2e/claude/test_hook_client.py` |
 | E2E Claude Code réel (faux serveur API, aucune clé requise) | `cd engine && uv run pytest ../e2e/claude/test_claude_e2e.py` |
@@ -162,6 +162,9 @@ Commandes du plugin : `/rgpd-guard:status`, `/rgpd-guard:scan <fichier>`, `/rgpd
 ├── e2e/claude/                       # faux serveur API, contrats du client, E2E Claude Code
 ├── e2e/playwright/                   # parcours canonique du tableau de bord, captures de référence
 ├── config/environments/              # dev.env (versionné), modèles staging et prod commentés
+├── config/ca/empty.pem               # paquet CA vide par défaut des constructions (proxy TLS facultatif)
+├── config/socle-files.txt            # empreintes amont des fichiers du socle, contrôlées avant chaque commit
+├── .cache/                           # ignoré : modèles téléchargés (models/), données locales (data/)
 ├── docker-compose*.yml, run*.sh      # pile conteneurisée et lanceurs (scripts/stack.sh)
 ├── docs/                             # DAT, BACKLOG, JOURNAL, SCHEMA, AUTOMATION, design system
 ├── CLAUDE.md, AGENTS.md, .claude/, .codex/      # méthode du socle P2Enjoy (MPL-2.0)

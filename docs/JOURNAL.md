@@ -149,7 +149,7 @@ Choisir et calibrer la combinaison de moteurs CPU (spaCy, Laya, GLiNER) avec des
 2. **Accueil = surface de connexion autonome** (DS §6.17) affichant l'état du moteur ; aucune navigation avant authentification. La session est un cookie `HttpOnly` du moteur, rien n'est stocké dans le navigateur.
 3. **Politiques en fenêtre de lecture découpée en sections**, une modale par section (DS §6.27) ; le refus du moteur s'affiche dans la modale sans effacer la saisie ; le rétablissement de la politique par défaut est une action sensible confirmée dans le flux.
 4. **Textes centralisés** dans `src/i18n/fr.ts` et contrôle des textes JSX écrits en dur par l'arbre syntaxique TypeScript (DS §11.1). TypeScript est épinglé en 5.9, la version 7 (compilateur natif) n'exposant pas l'API JavaScript utilisée par ce contrôle.
-5. **Modèles en dev montés depuis `models-cache/`** plutôt qu'intégrés à l'image : un changement de code ne reconstruit pas 2 Go. En staging et en prod, ils sont intégrés à l'image (cible `prod`), lus hors ligne.
+5. **Modèles en dev montés depuis `.cache/models/`** plutôt qu'intégrés à l'image : un changement de code ne reconstruit pas 2 Go. En staging et en prod, ils sont intégrés à l'image (cible `prod`), lus hors ligne.
 6. **Seed rejoué à travers les vrais hooks** (`seeds/seed_events.py`) : aucun événement n'est inséré directement en base (CLAUDE.md §8).
 7. **Serveur Vite** : hôtes autorisés limités au poste local et au nom Compose `dashboard`, sans quoi le conteneur E2E serait refusé.
 8. **Construction derrière un proxy TLS** : secret de construction `ca` facultatif (fichier vide par défaut) et réseau de l'hôte à la demande ; aucun certificat de construction ne reste dans les images.
@@ -193,3 +193,13 @@ Le parcours Playwright du bac à sable a échoué : un prompt réaliste (« Mon 
 - Page Moteurs muette sur Laya : les profils listaient les détecteurs, pas les classificateurs.
 - Message de refus de politique mêlant français et anglais (« Value error, … unterminated subpattern ») : traduction des erreurs de validation par type et message d'expression régulière entièrement français.
 - Captures pleine page des modales et du mobile faussées par les éléments fixes (voile, barre inférieure) : ces captures sont prises sur la fenêtre visible.
+
+## 2026-10-03 : boucle de résolution du registre d'incohérences (v0.1.0)
+
+### Problème
+
+L'audit de clôture a ouvert dix-sept entrées dans [le registre](INCONSISTENCY_REPORT.md). Cette section consigne les décisions prises en les résolvant ; les corrections elles-mêmes sont décrites par leurs commits et le CHANGELOG.
+
+### Décisions
+
+1. **IR-02, fichiers du socle sans modification.** Le `.gitignore` racine est restauré à l'identique de l'amont et les règles propres au projet passent dans des `.gitignore` imbriqués, à côté de ce qu'ils ignorent (mécanisme natif de Git, même logique que `CLAUDE_PROJECT.md` face à `CLAUDE.md`). Les dossiers racine `models-cache/` et `data/` deviennent `.cache/models/` et `.cache/data/`, que le socle ignore déjà : aucun fichier global à toucher. Écarté : un dossier racine qui s'ignore lui-même (`.gitignore` contenant `*`), moins découvrable. Pour que l'écart ne revienne pas, les empreintes amont des 25 fichiers importés sont figées dans `config/socle-files.txt` et vérifiées par `scripts/project-pre-commit` ; le contrôle échouait sur l'ancien `.gitignore` et passe sur la version restaurée.

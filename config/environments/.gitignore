@@ -1,0 +1,3 @@
+# Fichiers d'environnement réels (staging.env, prod.env) : seuls dev.env et les modèles .example sont versionnés.
+*.env
+!dev.env

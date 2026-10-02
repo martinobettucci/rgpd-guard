@@ -2,7 +2,7 @@
 # @verifies docs/BACKLOG.md#RG-007 | docs/BACKLOG.md#RG-008 | docs/BACKLOG.md#RG-009 | docs/DAT.md#moteur
 """Détecteurs à modèles CPU : logique pure toujours testée, inférence réelle si les modèles sont présents.
 
-Pour l'inférence : HF_HOME=../models-cache HF_HUB_OFFLINE=1 uv run pytest -m models
+Pour l'inférence : HF_HOME=../.cache/models HF_HUB_OFFLINE=1 uv run pytest -m models
 """
 
 from __future__ import annotations
