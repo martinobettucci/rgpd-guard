@@ -192,7 +192,7 @@ Tests : unitaires (déterminisme, validité des checksums) ; E2E `./runDev.sh se
 <a id="RG-018"></a>
 ### [~] RG-018 Conteneurisation dev, staging, prod et lanceurs
 
-Critères d'acceptation : `docker-compose.yml` et surcharges `dev`, `staging`, `prod` ; `runDev.sh`, `runStaging.sh`, `runProd.sh` (`up`, `down`, `logs`, `seed`, `test`, `e2e`, `bench`, `token`, `reset`) ; fichiers d'environnement documentés ; ports liés à 127.0.0.1 ; modèles intégrés à l'image, exécution hors ligne ; conteneurs non root.
+Critères d'acceptation : `docker-compose.yml` et surcharges `dev`, `staging`, `prod` ; `runDev.sh`, `runStaging.sh`, `runProd.sh` (`up`, `down`, `logs`, `status`, `token`, `reset` partout ; `seed` en dev et staging ; `test`, `e2e`, `bench` en dev, seul environnement qui monte le générateur seedé) ; fichiers d'environnement documentés ; ports liés à 127.0.0.1 ; modèles intégrés à l'image, exécution hors ligne ; conteneurs non root.
 
 Tests : unitaire des scripts (mode simulation) ; E2E clone propre puis `./runDev.sh up` sain et seedé.
 

@@ -168,6 +168,8 @@ cmd_e2e() {
 
 cmd_bench() {
   require_docker
+  # Le corpus vient du générateur seedé (Faker), monté et installé uniquement dans l'image de développement.
+  [[ "$STACK_ENV" == "dev" ]] || fail "le banc d'évaluation se mesure sur la pile de développement (./runDev.sh bench)."
   compose exec -T engine sh -c "python /seeds/generate.py --out /data/corpus.jsonl && python -m rgpd_guard.bench /data/corpus.jsonl --out /data/bench/latest.json"
 }
 

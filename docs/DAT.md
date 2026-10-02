@@ -256,7 +256,7 @@ Images :
 - Le dossier racine de travail (`RGPD_GUARD_WORKSPACE_ROOT`, défaut : dossier personnel) est monté en lecture seule au même chemin dans le moteur, pour les mentions `@` et `/rgpd-guard:scan`.
 - Construction derrière un proxy TLS : `BUILD_CA_BUNDLE` (fichier PEM transmis en secret de construction) et `BUILD_NETWORK=host`, tous deux facultatifs. Sans proxy, le secret pointe sur `config/ca/empty.pem`, fichier vide suivi par git : un clone neuf construit sans réglage.
 
-Lanceurs `runDev.sh`, `runStaging.sh`, `runProd.sh` : `up`, `down`, `logs`, `status`, `seed`, `test`, `e2e`, `bench`, `token`, `reset`. Le lanceur écrit l'adresse et le jeton de l'environnement démarré dans `~/.config/rgpd-guard/engine.env` (mode 600) : le plugin vise le dernier environnement démarré. En prod, le jeton et la clé HMAC sont générés au premier démarrage s'ils sont absents de `config/environments/prod.env`.
+Lanceurs `runDev.sh`, `runStaging.sh`, `runProd.sh` : `up`, `down`, `logs`, `status`, `token`, `reset` dans les trois environnements (`reset` demande de saisir le nom de l'environnement hors dev) ; `seed` en dev et staging ; `test`, `e2e` et `bench` en dev seulement, car le générateur seedé (Faker) n'est monté que dans l'image de développement. Le lanceur écrit l'adresse et le jeton de l'environnement démarré dans `~/.config/rgpd-guard/engine.env` (mode 600) : le plugin vise le dernier environnement démarré. En prod, le jeton et la clé HMAC sont générés au premier démarrage s'ils sont absents de `config/environments/prod.env`.
 
 Reprise : la base SQLite vit dans un volume nommé ; sa perte n'efface que le journal et les surcharges de politique (la politique par défaut est dans l'image). Le coffre de pseudonymes est volontairement volatil.
 

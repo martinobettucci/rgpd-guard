@@ -36,7 +36,7 @@ Plugin Claude Code qui bloque ou pseudonymise localement, sur CPU, les données 
 | Contrôles rapides du projet | `scripts/project-pre-commit` (`--all` pour tout le dépôt) |
 | Références de traçabilité | `scripts/check-spec-refs` |
 | Pile de développement | `./runDev.sh up`, `down`, `logs`, `status`, `seed`, `test`, `e2e`, `bench`, `token`, `reset` |
-| Staging, production | `./runStaging.sh …`, `./runProd.sh …` (mêmes sous-commandes) |
+| Staging, production | `./runStaging.sh …`, `./runProd.sh …` : `up`, `down`, `logs`, `status`, `token`, `reset` ; `seed` en staging ; `test`, `e2e`, `bench` réservés au dev |
 | E2E Claude Code (faux serveur API) | `cd engine && uv run pytest ../e2e/claude` |
 
 ## Environnement d'exécution des agents

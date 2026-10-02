@@ -154,6 +154,11 @@ check "staging : tests refusés hors dev" bash -c "test $status -ne 0 && grep -q
 status=0
 launch "$repo" runProd.sh e2e || status=$?
 check "prod : E2E refusés" bash -c "test $status -ne 0 && grep -q 'pile de développement seedée' '$output_file'"
+for launcher in runStaging.sh runProd.sh; do
+  status=0
+  launch "$repo" "$launcher" bench || status=$?
+  check "$launcher : banc refusé hors dev, sans appel à Docker exec" bash -c "test $status -ne 0 && grep -q './runDev.sh bench' '$output_file' && ! grep -q 'exec -T engine sh' '$repo/calls'"
+done
 
 # 8. Réinitialisation : confirmation exigée hors dev.
 repo="$(new_repo reset)"

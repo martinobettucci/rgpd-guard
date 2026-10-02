@@ -152,7 +152,7 @@ export const fr = {
   "engines.vault.sessions": "Sessions",
   "engines.vault.tokens": "Jetons",
   "engines.bench": "Banc d'évaluation",
-  "engines.bench.none": "Aucun banc d'évaluation enregistré.",
+  "engines.bench.none": "Aucun banc d'évaluation enregistré dans cet environnement. Le banc se mesure sur la pile de développement : ./runDev.sh bench.",
   "engines.bench.generated": "Mesuré le {date} sur {records} textes",
   "engines.col.profile": "Profil",
   "engines.col.precision": "Précision",

@@ -4,11 +4,6 @@ Défauts constatés hors de l'unité en cours, à résoudre par la boucle dédi�
 
 Origine : audit en lecture seule de la v0.1.0 avant la campagne de clôture, constats revérifiés à la main.
 
-## IR-03 `bench` échoue hors de l'environnement de développement
-
-- Constat : `cmd_bench` (`scripts/stack.sh:169`) exécute `/seeds/generate.py` dans le conteneur du moteur ; staging et prod ne montent pas `/seeds` (`docker-compose.staging.yml`, `docker-compose.prod.yml`) et l'image prod n'a pas Faker (`engine/Dockerfile`, `--no-dev`). BACKLOG RG-018, DAT et CLAUDE_PROJECT annoncent pourtant les mêmes sous-commandes pour les trois lanceurs, alors que `seed` est refusé en prod et `test`, `e2e` réservés au dev.
-- Concerne : RG-018, README, [DAT §12](DAT.md#deploiement), CLAUDE_PROJECT.
-
 ## IR-04 Le garde-fou de `./runDev.sh e2e` ne bloque jamais
 
 - Constat : `compose ps --status running engine` (`scripts/stack.sh:164`) réussit même quand la pile est arrêtée ; le message « pile arrêtée » n'apparaît jamais et Playwright échoue plus loin sur une erreur réseau.

@@ -62,7 +62,7 @@ uv run python -m rgpd_guard.model_store ../.cache/models   # environ 1,9 Go, une
 | staging | `./runStaging.sh up` | http://127.0.0.1:18742 | http://127.0.0.1:18743 | jeton généré, seed de démonstration par `./runStaging.sh seed` |
 | prod | `./runProd.sh up` | http://127.0.0.1:8742 | http://127.0.0.1:8743 | jeton généré, aucune donnée seedée |
 
-Sous-commandes communes : `up`, `down`, `logs`, `status`, `seed` (dev et staging), `test` (dev), `e2e` (dev), `bench`, `token`, `reset` (confirmation exigée hors dev).
+Sous-commandes communes : `up`, `down`, `logs`, `status`, `seed` (dev et staging), `test` (dev), `e2e` (dev), `bench` (dev), `token`, `reset` (confirmation exigée hors dev).
 
 - Le premier `./runDev.sh up` télécharge les modèles CPU épinglés dans `.cache/models/` (environ 1,9 Go, une fois), puis démarre la pile, attend le chargement des modèles (environ une minute) et rejoue le corpus seedé à travers les vrais hooks.
 - Chaque `up` écrit l'adresse et le jeton de l'environnement démarré dans `~/.config/rgpd-guard/engine.env` (mode 600) : le plugin vise automatiquement le dernier environnement démarré.
