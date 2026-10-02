@@ -6,8 +6,8 @@ RGPD Guard est distribué sous licence MIT. Il s'appuie sur les composants tiers
 
 | Modèle | Révision | Licence | Usage |
 |---|---|---|---|
-| `spacy/fr_core_news_md` | `45238ee` | LGPL-LR (Lesser General Public License for Linguistic Resources) | détecteur spaCy, français |
-| `spacy/en_core_web_md` | `22f17ee` | MIT | détecteur spaCy, anglais |
+| `fr_core_news_md` (roue Explosion) | 3.8.0 | LGPL-LR (Lesser General Public License for Linguistic Resources) | détecteur spaCy, français |
+| `en_core_web_md` (roue Explosion) | 3.8.0 | MIT | détecteur spaCy, anglais |
 | `convaiinnovations/laya-multilingual` | `e4e9ddf` | Apache-2.0 | classificateur de catégories sensibles |
 | `urchade/gliner_multi_pii-v1` | `1fcf13e` | Apache-2.0 | détecteur GLiNER |
 | `microsoft/mdeberta-v3-base` (configuration et tokenizer seulement) | `a048466` | MIT | encodeur de GLiNER |

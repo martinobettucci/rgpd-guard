@@ -17,7 +17,9 @@ dependencies = [
 
 [project.optional-dependencies]
 # Détecteurs à modèles, exécutés sur CPU uniquement (torch via l'index CPU de PyTorch).
-nlp = ["spacy>=3.8,<3.9"]
+# Pipelines spaCy publiés par Explosion pour spaCy 3.8 (le Hub Hugging Face n'expose que les versions 3.7) :
+# roues épinglées par URL et empreinte dans uv.lock, installées dans l'environnement virtuel donc lues hors ligne.
+nlp = ["spacy>=3.8,<3.9", "fr-core-news-md==3.8.0", "en-core-web-md==3.8.0"]
 laya = ["laya>=0.3.20", "torch>=2.4"]
 gliner = ["gliner>=0.2.20", "torch>=2.4", "sentencepiece>=0.2", "protobuf>=4.25"]
 
@@ -33,6 +35,8 @@ dev = [
 
 [tool.uv.sources]
 torch = [{ index = "pytorch-cpu" }]
+fr-core-news-md = { url = "https://github.com/explosion/spacy-models/releases/download/fr_core_news_md-3.8.0/fr_core_news_md-3.8.0-py3-none-any.whl" }
+en-core-web-md = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.8.0/en_core_web_md-3.8.0-py3-none-any.whl" }
 
 [[tool.uv.index]]
 name = "pytorch-cpu"

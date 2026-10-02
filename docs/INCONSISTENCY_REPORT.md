@@ -4,12 +4,6 @@ Défauts constatés hors de l'unité en cours, à résoudre par la boucle dédi�
 
 Origine : audit en lecture seule de la v0.1.0 avant la campagne de clôture, constats revérifiés à la main.
 
-## IR-07 Modèles spaCy 3.7 chargés par spaCy 3.8
-
-- Constat : avertissement W095 à chaque chargement (« trained with spaCy v3.7.0 and may not be 100% compatible with the current version (3.8.16) »).
-- Mesure : `meta.json` de `spacy/fr_core_news_md` (3.7.0) et `spacy/en_core_web_md` (3.7.1) sur Hugging Face déclare `spacy_version >=3.7.0,<3.8.0` ; `engine/uv.lock` porte spacy 3.8.16, thinc 8.3.13, numpy 2.5.3. Les roues 3.8.0 sont publiées sur les releases GitHub d'Explosion (`compatibility.json` : spaCy 3.8 → 3.8.0).
-- Concerne : RG-007, `engine/rgpd_guard/model_store.py`, `detectors/spacy_ner.py`.
-
 ## IR-08 Chiffres du banc antérieurs au masquage avant Laya
 
 - Constat : README (latences et rappel des catégories), DAT (§ modèles), BACKLOG RG-022 et JOURNAL citent un banc mesuré avant le commit `422558f`, qui a changé le texte soumis aux classificateurs. Aucun banc postérieur n'est consigné.

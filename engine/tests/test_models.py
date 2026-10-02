@@ -52,6 +52,32 @@ def _load(name: str) -> Any:
 
 
 @pytest.mark.models
+def test_spacy_models_built_for_installed_spacy() -> None:
+    """Les pipelines déclarent la version de spaCy installée : aucun avertissement W095 au chargement."""
+    import warnings
+
+    from rgpd_guard.detectors.spacy_ner import load
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings("error", message=r".*\[W095\]")
+        try:
+            detector, _ = load(Settings(token="t", hmac_key="k"))
+        except UserWarning as exc:
+            pytest.fail(f"modèle spaCy entraîné pour une autre version : {exc}")
+        except Exception as exc:  # modèles absents : test ignoré, jamais faussement vert
+            pytest.skip(f"modèle spacy indisponible : {exc}")
+    for nlp in detector.pipelines.values():
+        assert spacy_version_compatible(nlp.meta["spacy_version"])
+
+
+def spacy_version_compatible(constraint: str) -> bool:
+    import spacy
+    from packaging.specifiers import SpecifierSet
+
+    return spacy.__version__ in SpecifierSet(constraint)
+
+
+@pytest.mark.models
 def test_spacy_finds_people_fr_en() -> None:
     detector = _load("spacy")
     fr = detector.detect("Je travaille avec Camille Martin à Lyon.", DetectionContext(language="fr"))

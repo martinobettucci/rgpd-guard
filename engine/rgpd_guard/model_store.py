@@ -1,5 +1,9 @@
 # @spec docs/BACKLOG.md#RG-007 | docs/BACKLOG.md#RG-008 | docs/BACKLOG.md#RG-009 | docs/DAT.md#dependances
-"""Modèles CPU épinglés : téléchargés une fois dans un cache Hugging Face local, puis lus hors ligne.
+"""Modèles CPU épinglés.
+
+Laya et GLiNER sont téléchargés une fois dans un cache Hugging Face local, puis lus hors ligne. Les pipelines
+spaCy sont des paquets Python (roues Explosion épinglées par empreinte dans `uv.lock`) : installés avec
+l'extra `nlp`, ils n'ont rien à télécharger ici.
 
 Usage (construction de l'image ou poste de développement) :
     python -m rgpd_guard.model_store <dossier_cache>
@@ -22,13 +26,25 @@ class PinnedModel:
     ignore_patterns: tuple[str, ...] | None = None
 
 
+@dataclass(frozen=True)
+class PackagedModel:
+    """Modèle distribué comme paquet Python : version épinglée dans pyproject.toml et uv.lock."""
+
+    package: str
+    version: str
+    license: str
+
+    @property
+    def label(self) -> str:
+        return f"{self.package} {self.version} ({self.license})"
+
+
+PACKAGES: dict[str, PackagedModel] = {
+    "spacy_fr": PackagedModel("fr_core_news_md", "3.8.0", "LGPL-LR"),
+    "spacy_en": PackagedModel("en_core_web_md", "3.8.0", "MIT"),
+}
+
 MODELS: dict[str, PinnedModel] = {
-    "spacy_fr": PinnedModel(
-        "spacy/fr_core_news_md", "45238ee04ed39d2488b1da882a9c597c6279b633", "LGPL-LR", ignore_patterns=("*.whl",)
-    ),
-    "spacy_en": PinnedModel(
-        "spacy/en_core_web_md", "22f17ee20cda126e498ea2fb92dc504bea0d111c", "MIT", ignore_patterns=("*.whl",)
-    ),
     "laya": PinnedModel(
         "convaiinnovations/laya-multilingual", "e4e9ddf21a7b1903b7acffd8814ad4307bf63a67", "Apache-2.0"
     ),
@@ -43,7 +59,6 @@ MODELS: dict[str, PinnedModel] = {
 }
 
 GROUPS: dict[str, tuple[str, ...]] = {
-    "spacy": ("spacy_fr", "spacy_en"),
     "laya": ("laya",),
     "gliner": ("gliner", "gliner_base"),
 }
@@ -89,7 +104,7 @@ def download(cache_dir: Path, groups: list[str]) -> None:
 
 def main() -> None:
     if len(sys.argv) < 2:
-        raise SystemExit("usage : python -m rgpd_guard.model_store <dossier_cache> [spacy,laya,gliner]")
+        raise SystemExit("usage : python -m rgpd_guard.model_store <dossier_cache> [laya,gliner]")
     groups = sys.argv[2].split(",") if len(sys.argv) > 2 else list(GROUPS)
     download(Path(sys.argv[1]), groups)
 

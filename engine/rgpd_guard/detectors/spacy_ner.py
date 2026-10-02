@@ -79,14 +79,12 @@ def _plausible_person(value: str) -> bool:
 def load(settings: Settings) -> tuple[SpacyDetector, dict[str, str]]:
     import spacy
 
-    from ..model_store import MODELS, local_path
+    from ..model_store import PACKAGES
 
+    fr, en = PACKAGES["spacy_fr"], PACKAGES["spacy_en"]
     pipelines = {
-        "fr": spacy.load(local_path("spacy_fr"), exclude=_EXCLUDED_FR),
-        "en": spacy.load(local_path("spacy_en"), exclude=_EXCLUDED_EN),
+        "fr": spacy.load(fr.package, exclude=_EXCLUDED_FR),
+        "en": spacy.load(en.package, exclude=_EXCLUDED_EN),
     }
-    detail = {
-        "fr": f"{MODELS['spacy_fr'].repo_id} ({MODELS['spacy_fr'].license})",
-        "en": f"{MODELS['spacy_en'].repo_id} ({MODELS['spacy_en'].license})",
-    }
+    detail = {"fr": fr.label, "en": en.label}
     return SpacyDetector(pipelines), detail

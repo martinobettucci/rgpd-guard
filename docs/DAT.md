@@ -139,7 +139,7 @@ La validation d'Edit précédant les hooks, la consigne injectée à Claude (Ses
 |---|---|---|---|
 | `rules` | spans | tous | email, téléphone (phonenumbers, plus le format français hors métadonnées), IBAN, carte bancaire, NIR, SIREN, SIRET (python-stdnum), IP publique, plaque SIV, date de naissance contextuelle, adresse postale FR, URL sensible |
 | `secrets` | spans | tous | préfixes de fournisseurs, JWT, clés PEM, affectations à forte entropie |
-| `spacy` | spans | `equilibre`, `max` | `fr_core_news_md`, `en_core_web_md` : personnes, lieux |
+| `spacy` | spans | `equilibre`, `max` | `fr_core_news_md` et `en_core_web_md` 3.8.0 (pour spaCy 3.8) : personnes, lieux |
 | `gliner` | spans | `max` | `urchade/gliner_multi_pii-v1`, labels zero-shot |
 | `laya` | catégories | `equilibre` (prompts), `max` (prompts et sorties) | `convaiinnovations/laya-multilingual`, questions `noul` calibrées |
 
@@ -273,4 +273,4 @@ Reprise : la base SQLite vit dans un volume nommé ; sa perte n'efface que le jo
 
 Les licences sont recensées dans [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 
-Les modèles sont épinglés par révision dans `engine/rgpd_guard/model_store.py`, téléchargés par `python -m rgpd_guard.model_store <cache>` dans un cache Hugging Face local, puis lus hors ligne (`HF_HOME` vers ce cache, `HF_HUB_OFFLINE=1`). torch est installé depuis l'index CPU de PyTorch (aucune bibliothèque CUDA). Le banc d'évaluation (`python -m rgpd_guard.bench <corpus>`) écrit `bench/latest.json` dans le dossier de données, lu par la page Moteurs.
+Laya et GLiNER sont épinglés par révision dans `engine/rgpd_guard/model_store.py`, téléchargés par `python -m rgpd_guard.model_store <cache>` dans un cache Hugging Face local, puis lus hors ligne (`HF_HOME` vers ce cache, `HF_HUB_OFFLINE=1`). Les pipelines spaCy sont des paquets Python : roues 3.8.0 publiées par Explosion, déclarées dans l'extra `nlp` et épinglées par URL et empreinte SHA-256 dans `engine/uv.lock` ; installées dans l'environnement virtuel de l'image, elles se chargent sans réseau. Le Hub Hugging Face n'expose que leurs versions 3.7, incompatibles avec spaCy 3.8. torch est installé depuis l'index CPU de PyTorch (aucune bibliothèque CUDA). Le banc d'évaluation (`python -m rgpd_guard.bench <corpus>`) écrit `bench/latest.json` dans le dossier de données, lu par la page Moteurs.
