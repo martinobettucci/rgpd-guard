@@ -140,3 +140,56 @@ Choisir et calibrer la combinaison de moteurs CPU (spaCy, Laya, GLiNER) avec des
 2. **Laya reste un complément en version bêta** : il qualifie, il ne localise pas ; un rappel de 60 % ne permet pas de s'y fier seul. Amélioration possible : affinage sur des décisions du domaine (Laya le prévoit), inscrite au backlog (RG-022).
 3. **Cible de latence du profil `equilibre` révisée** de moins de 600 ms à la mesure réelle (p95 1,1 s sur 4 vCPU) : un prompt est saisi par un humain, une seconde reste acceptable ; le profil `rapide` répond en moins d'une milliseconde pour qui préfère la vitesse.
 4. **Une seule passe Laya de dix questions** plutôt que des passes séparées (même calibration, deux fois plus rapide).
+
+## 2026-10-02 : tableau de bord et conteneurisation
+
+### Décisions
+
+1. **Tokens mesurés plutôt que déclarés.** Couples `*-on-soft` calculés pour dépasser 4,5:1 (5,81 à 7,68) et contrôlés par `npm run check:contrast`. Constat : le texte blanc sur le rouge P2Enjoy n'atteint que 3,74:1 ; les boutons destructifs sont donc en contour (texte `danger-on-soft` sur blanc, 7,52:1) plutôt qu'en aplat, sans nouvelle couleur.
+2. **Accueil = surface de connexion autonome** (DS §6.17) affichant l'état du moteur ; aucune navigation avant authentification. La session est un cookie `HttpOnly` du moteur, rien n'est stocké dans le navigateur.
+3. **Politiques en fenêtre de lecture découpée en sections**, une modale par section (DS §6.27) ; le refus du moteur s'affiche dans la modale sans effacer la saisie ; le rétablissement de la politique par défaut est une action sensible confirmée dans le flux.
+4. **Textes centralisés** dans `src/i18n/fr.ts` et contrôle des textes JSX écrits en dur par l'arbre syntaxique TypeScript (DS §11.1). TypeScript est épinglé en 5.9, la version 7 (compilateur natif) n'exposant pas l'API JavaScript utilisée par ce contrôle.
+5. **Modèles en dev montés depuis `models-cache/`** plutôt qu'intégrés à l'image : un changement de code ne reconstruit pas 2 Go. En staging et en prod, ils sont intégrés à l'image (cible `prod`), lus hors ligne.
+6. **Seed rejoué à travers les vrais hooks** (`seeds/seed_events.py`) : aucun événement n'est inséré directement en base (CLAUDE.md §8).
+7. **Serveur Vite** : hôtes autorisés limités au poste local et au nom Compose `dashboard`, sans quoi le conteneur E2E serait refusé.
+8. **Construction derrière un proxy TLS** : secret de construction `ca` facultatif (fichier vide par défaut) et réseau de l'hôte à la demande ; aucun certificat de construction ne reste dans les images.
+9. **Playwright épinglé en 1.56.1**, version du navigateur Chromium préinstallé de l'environnement d'exécution des agents et de l'image `mcr.microsoft.com/playwright:v1.56.1-noble` utilisée par `./runDev.sh e2e`.
+
+## 2026-10-02 : vérification visuelle, Laya et identifiants mêlés au texte
+
+### Problème
+
+Le parcours Playwright du bac à sable a échoué : un prompt réaliste (« Mon collègue Paul Durand (email, téléphone) a été hospitalisé pour une dépression. Virement sur FR76… ») n'était pas reconnu comme relevant de la santé. Le défaut est dans le produit, pas dans le test.
+
+### Observations (mesurées)
+
+- Laya sur ce prompt : santé 0,83 sans la phrase IBAN, 0,18 avec. Les identifiants structurés (suites de chiffres, adresses email) diluent le signal sémantique ; le texte bascule vers « confidentiel » (0,88).
+- Score par phrase (`predict_batch` de Laya) : corrige le cas (0,83) mais coûte 3 à 4 fois une passe sur CPU, car le lot empile une ligne par question et par phrase. Écarté.
+- Substitution des identifiants par des marqueurs neutres avant la classification, comparée sur le corpus seedé et 8 textes composites (identifiants mêlés, dont 2 négatifs) :
+
+| Variante soumise à Laya | Vrais positifs | Faux positifs | Manqués |
+|---|---|---|---|
+| texte brut | 12 | 8 | 9 |
+| tous les identifiants masqués | 12 | 11 | 9 |
+| **identifiants structurés masqués, noms en clair** | **13** | **5** | **8** |
+| noms remplacés par un nom de substitution | 13 | 4 | 8 |
+| marqueurs en anglais | 13 | 11 | 8 |
+
+- Masquer aussi les noms crée de faux « mineur » (6 sur « [personne], né le [date de naissance] »). Les jetons `⟦TYPE_N⟧` soumis tels quels produisent un faux « mineur » à 0,9 : un prompt pseudonymisé recollé par l'utilisateur aurait déclenché un avertissement à tort.
+- Le diabète sous insuline reste sous le seuil (0,02 en brut) : limite du modèle en zero-shot, déjà couverte par RG-022.
+- Le rechargement à chaud du moteur dev occupait un cœur en continu : sans `watchfiles`, uvicorn scrutait tout `/app`, y compris l'environnement virtuel monté (1,3 Go). Les latences du bac à sable en étaient multipliées par trois.
+
+### Décisions
+
+1. **Masquage avant classification** (`pipeline.py`, `taxonomy.CLASSIFIER_PLACEHOLDERS`) : les identifiants structurés détectés sont remplacés par des marqueurs neutres (`[email]`, `[IBAN]`…) et les jetons `⟦TYPE_N⟧` par `[type]` dans le seul texte soumis aux classificateurs. Noms, lieux et organisations restent en clair (langage naturel, et porteurs de la catégorie pour un hôpital, un syndicat, un parti). Coût nul ; les spans et l'escalade de la politique restent calculés sur le texte d'origine. Le substitut de nom, à peine meilleur, est écarté : il ajoute une donnée inventée sans gain de rappel.
+2. **Rechargement limité au paquet** `rgpd_guard` en dev.
+3. **Phrase du parcours E2E** : un texte médical explicite avec identifiants mêlés (santé 0,82 avec l'IBAN). La phrase d'origine reste sous le seuil après masquage (0,29) ; cette limite est consignée ici plutôt que masquée par un seuil abaissé.
+
+### Défauts relevés par l'inspection des captures et corrigés
+
+- Liste « Données détectées par type » décalée par le retrait par défaut des listes.
+- Barre de navigation mobile limitée à la largeur de son contenu ; en-tête mobile aux boutons empilés.
+- Surlignages du texte annoté créant un faux espace avant la ponctuation.
+- Page Moteurs muette sur Laya : les profils listaient les détecteurs, pas les classificateurs.
+- Message de refus de politique mêlant français et anglais (« Value error, … unterminated subpattern ») : traduction des erreurs de validation par type et message d'expression régulière entièrement français.
+- Captures pleine page des modales et du mobile faussées par les éléments fixes (voile, barre inférieure) : ces captures sont prises sur la fenêtre visible.

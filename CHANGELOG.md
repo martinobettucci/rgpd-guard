@@ -17,10 +17,22 @@ Toutes les évolutions notables de RGPD Guard sont consignées ici.
 - Corpus seedé déterministe, banc d'évaluation par profil (précision, rappel, F1, latences) et seuils de catégories calibrés.
 - Contrôle de traçabilité : chaque référence `@spec` ou `@verifies` doit désigner une ancre existante.
 - Inventaire des licences tierces (THIRD_PARTY_NOTICES.md).
+- Tableau de bord React + Vite aux couleurs P2Enjoy : accueil et connexion par jeton, Journal filtrable et paginé, Bac à sable (texte annoté, version pseudonymisée, latences), Politiques (modale par section, rétablissement confirmé), Moteurs (composants, profils, banc).
+- Conteneurisation : images moteur (dev, prod avec modèles intégrés) et tableau de bord (Vite, nginx non root), Compose dev, staging et prod, lanceurs `runDev.sh`, `runStaging.sh`, `runProd.sh`, fichiers d'environnement commentés, seed rejoué à travers les vrais hooks.
+- Parcours E2E Playwright du tableau de bord (captures JPEG, vidéos webm).
+- Classification des catégories sur une copie du texte où les identifiants structurés et les jetons sont remplacés par des marqueurs neutres (moins de faux positifs, plus de catégories reconnues quand des identifiants sont mêlés au texte).
+- Page Moteurs : classificateurs de catégories affichés pour chaque profil.
+- `./runDev.sh test` exécute aussi les contrats du client de hook dans le conteneur.
+
+### Modifié
+
+- Erreurs de validation de l'API traduites en français par type d'erreur ; message d'expression régulière invalide sans texte anglais.
 
 ### Corrigé
 
 - Numéro de version précédé de `version:` pris pour une adresse IP publique.
+- Rechargement à chaud du moteur dev qui scrutait l'environnement virtuel monté et occupait un cœur en continu.
+- Tableau de bord : liste des types détectés décalée, barre de navigation mobile incomplète, en-tête mobile empilé, faux espace avant la ponctuation dans le texte annoté.
 
 ## [Publié]
 

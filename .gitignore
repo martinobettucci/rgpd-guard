@@ -263,3 +263,6 @@ models-cache/
 e2e/artifacts/
 e2e/playwright/test-results/
 e2e/playwright/playwright-report/
+# Sorties Playwright volumineuses (les captures JPEG de référence sont versionnées).
+e2e/playwright/videos/
+e2e/playwright/node_modules/

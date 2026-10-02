@@ -157,6 +157,7 @@ Catégories sensibles : `SANTE`, `OPINION_POLITIQUE`, `RELIGION`, `ORIENTATION_S
 2. Les spans qui se recouvrent sont départagés : span validé par somme de contrôle, puis score le plus élevé, puis span le plus long.
 3. La liste blanche (valeurs exactes et motifs) retire les spans correspondants.
 4. Les spans sous le score minimal de leur type sont ignorés.
+5. Le texte soumis aux classificateurs de catégories est une copie où les identifiants structurés retenus (email, téléphone, IBAN, NIR, carte, date de naissance, secret...) sont remplacés par des marqueurs neutres (`[email]`, `[IBAN]`...) et les jetons `⟦TYPE_N⟧` par `[type]`. Noms, lieux et organisations restent en clair. Motif : les suites de chiffres diluent le signal sémantique de Laya ; mesures dans le [journal](JOURNAL.md). Spans, décisions et escalade restent calculés sur le texte d'origine.
 
 ### 6.4 Mode code
 
@@ -264,7 +265,7 @@ Reprise : la base SQLite vit dans un volume nommé ; sa perte n'efface que le jo
 
 - Détection locale sur CPU uniquement : aucun appel réseau à l'exécution, modèles intégrés à l'image.
 - spaCy français sous licence LGPL-LR : modèle téléchargé à la construction de l'image, jamais versionné dans le dépôt.
-- Laya ne localise pas les spans : il qualifie le caractère sensible du texte, les spans sont pseudonymisés par les autres détecteurs.
+- Laya ne localise pas les spans : il qualifie le caractère sensible du texte, les spans sont pseudonymisés par les autres détecteurs. Rappel mesuré d'environ 60 % sur les catégories en zero-shot (un diagnostic sans vocabulaire hospitalier peut passer sous le seuil) ; l'affinage est prévu (RG-022).
 - Limites connues : images collées ; contenus injectés sans hook (CLAUDE.md, mémoire, état git, sortie des commandes `!` d'une commande slash) ; télémétrie de Claude Code (désactivable par `DISABLE_TELEMETRY=1`) ; contenu analysé côté serveur par WebFetch ; sortie d'une commande en échec arrêtée par le seul filet `PostToolBatch`, qui laisse le résultat dans la conversation (consigne `/rewind`) ; transcript local qui conserve le texte d'un prompt bloqué ; Edit dont l'`old_string` contient un jeton refusé par Claude Code avant tout hook.
 
 <a id="dependances"></a>

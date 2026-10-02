@@ -15,8 +15,8 @@ Version 0.1.0 en construction. L'état réel de chaque unité est tenu dans [doc
 | Moteur : règles et validateurs, secrets, pseudonymisation réversible, politique, audit, authentification | implémenté, vérifié en E2E |
 | Moteur : spaCy, Laya, GLiNER (CPU, hors ligne) | implémenté, mesuré par le banc d'évaluation |
 | Corpus seedé et banc d'évaluation | en place |
-| Dashboard React + Vite | à venir |
-| Conteneurisation dev, staging, prod | à venir |
+| Dashboard React + Vite (Journal, Bac à sable, Politiques, Moteurs) | implémenté |
+| Conteneurisation dev, staging, prod et lanceurs | implémenté |
 
 ## Principe
 
@@ -32,12 +32,13 @@ Architecture détaillée : [docs/DAT.md](docs/DAT.md). Décisions et investigati
 - Moteur : Python 3.12, uv, FastAPI, SQLite.
 - Détection CPU : python-stdnum, phonenumbers, spaCy, Laya, GLiNER (torch CPU, modèles épinglés et lus hors ligne).
 - Plugin : JSON, POSIX `sh`, `curl`.
-- Dashboard : React, Vite, TypeScript (à venir).
-- Conteneurs : Docker Compose (à venir).
+- Dashboard : React, Vite, TypeScript, lucide-react.
+- Conteneurs : Docker Compose (surcharges dev, staging, prod), nginx non root en production.
 
 ## Prérequis
 
 - Git, Bash, `curl`.
+- Docker avec Compose v2 pour la pile complète.
 - [uv](https://docs.astral.sh/uv/) (installe Python 3.12 si besoin).
 - Claude Code pour utiliser le plugin et pour les tests E2E.
 
@@ -53,7 +54,24 @@ cd engine && uv sync --group dev --extra nlp --extra laya --extra gliner
 uv run python -m rgpd_guard.model_store ../models-cache   # environ 1,9 Go, une seule fois
 ```
 
-## Lancer le moteur en développement (natif, en attendant Docker)
+## Lancer la pile (Docker)
+
+| Environnement | Démarrer | Moteur | Tableau de bord | Données |
+|---|---|---|---|---|
+| dev | `./runDev.sh up` | http://127.0.0.1:8742 | http://127.0.0.1:8743 | jeton fixe `dev-token-rgpd-guard`, journal seedé automatiquement |
+| staging | `./runStaging.sh up` | http://127.0.0.1:18742 | http://127.0.0.1:18743 | jeton généré, seed de démonstration par `./runStaging.sh seed` |
+| prod | `./runProd.sh up` | http://127.0.0.1:8742 | http://127.0.0.1:8743 | jeton généré, aucune donnée seedée |
+
+Sous-commandes communes : `up`, `down`, `logs`, `status`, `seed` (dev et staging), `test` (dev), `e2e` (dev), `bench`, `token`, `reset` (confirmation exigée hors dev).
+
+- Le premier `./runDev.sh up` télécharge les modèles CPU épinglés dans `models-cache/` (environ 1,9 Go, une fois), puis démarre la pile, attend le chargement des modèles (environ une minute) et rejoue le corpus seedé à travers les vrais hooks.
+- Chaque `up` écrit l'adresse et le jeton de l'environnement démarré dans `~/.config/rgpd-guard/engine.env` (mode 600) : le plugin vise automatiquement le dernier environnement démarré.
+- En staging et en prod, `config/environments/<env>.env` est créé à partir du modèle `.example` commenté, et le jeton comme la clé HMAC sont générés s'ils sont vides.
+- Le dossier personnel est monté en lecture seule dans le moteur (mentions `@` et `/rgpd-guard:scan`) ; le restreindre avec `RGPD_GUARD_WORKSPACE_ROOT=/chemin ./runProd.sh up`.
+- Derrière un proxy TLS d'entreprise : `BUILD_CA_BUNDLE=/chemin/ca.pem BUILD_HTTPS_PROXY=http://proxy:port BUILD_NETWORK=host ./runDev.sh up`.
+- Arrêt : `./runDev.sh down` ; réinitialisation des données : `./runDev.sh reset`.
+
+## Lancer le moteur sans Docker (développement du moteur)
 
 ```bash
 cd engine
@@ -97,12 +115,16 @@ Commandes du plugin : `/rgpd-guard:status`, `/rgpd-guard:scan <fichier>`, `/rgpd
 
 | Usage | Commande |
 |---|---|
+| Toute la batterie dans les conteneurs (moteur, contrats, tableau de bord) | `./runDev.sh test` |
+| Parcours E2E du tableau de bord (Playwright, captures JPEG et vidéos webm) | `./runDev.sh e2e` |
 | Tests unitaires et API du moteur | `cd engine && uv run pytest` |
+| Tableau de bord : typage, tests, textes, contrastes | `cd dashboard && npm run typecheck && npm test && npm run check:i18n && npm run check:contrast` |
 | Tests d'inférence sur les modèles réels | `cd engine && HF_HOME=../models-cache HF_HUB_OFFLINE=1 uv run pytest -m models` |
 | Lint, format, typage | `cd engine && uv run ruff check . && uv run ruff format --check . && uv run mypy` |
 | Contrats du client de hook | `cd engine && uv run pytest ../e2e/claude/test_hook_client.py` |
 | E2E Claude Code réel (faux serveur API, aucune clé requise) | `cd engine && uv run pytest ../e2e/claude/test_claude_e2e.py` |
 | Hooks du socle | `tests/git-hooks/test-hooks` |
+| Lanceurs `run*.sh` en simulation (faux Docker, aucun conteneur) | `tests/launchers/test-launchers` |
 | Contrôles rapides du projet | `scripts/project-pre-commit --all` |
 | Validation du plugin et de la marketplace | `claude plugin validate plugins/rgpd-guard && claude plugin validate .` |
 
@@ -136,7 +158,11 @@ Commandes du plugin : `/rgpd-guard:status`, `/rgpd-guard:scan <fichier>`, `/rgpd
 │   ├── rgpd_guard/
 │   └── tests/                        # tests unitaires et API, fixtures de payloads réels
 ├── seeds/                            # générateur déterministe du corpus étiqueté
+├── dashboard/                        # tableau de bord React + Vite (nginx en production)
 ├── e2e/claude/                       # faux serveur API, contrats du client, E2E Claude Code
+├── e2e/playwright/                   # parcours canonique du tableau de bord, captures de référence
+├── config/environments/              # dev.env (versionné), modèles staging et prod commentés
+├── docker-compose*.yml, run*.sh      # pile conteneurisée et lanceurs (scripts/stack.sh)
 ├── docs/                             # DAT, BACKLOG, JOURNAL, SCHEMA, AUTOMATION, design system
 ├── CLAUDE.md, AGENTS.md, .claude/, .codex/      # méthode du socle P2Enjoy (MPL-2.0)
 ├── .githooks/, scripts/git-hooks/, tests/git-hooks/   # garde-fous Git du socle
@@ -145,7 +171,6 @@ Commandes du plugin : `/rgpd-guard:status`, `/rgpd-guard:scan <fichier>`, `/rgpd
 
 ## Limites connues
 
-- Dashboard et conteneurs pas encore livrés.
 - En profil `rapide`, les noms de personnes en texte libre ne sont pas détectés.
 - Catégories sensibles (Laya, zero-shot) : rappel mesuré de 60 %, aucune reconnaissance des données concernant un mineur ; à considérer comme une couche complémentaire (bêta).
 - Non couverts par conception (voir [DAT §14](docs/DAT.md#compromis)) : images collées, contenus injectés par Claude Code sans hook (CLAUDE.md, mémoire, état git), télémétrie de Claude Code (`DISABLE_TELEMETRY=1` recommandé), contenu analysé côté serveur par WebFetch.

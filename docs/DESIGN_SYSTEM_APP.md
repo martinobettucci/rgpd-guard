@@ -9,7 +9,7 @@ Référence complémentaire à [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md), lue intégr
   - **Journal** (`/journal`) : événements traités par le moteur ;
   - **Bac à sable** (`/bac-a-sable`) : analyse d'un texte saisi ;
   - **Politiques** (`/politiques`) : règles de décision ;
-  - **Moteurs** (`/moteurs`) : état des détecteurs et banc d'évaluation.
+  - **Moteurs** (`/moteurs`) : état des détecteurs, détecteurs et classificateurs de chaque profil, banc d'évaluation (synthèse par profil, détail par type de donnée et par catégorie sensible pour le profil choisi).
 - En-tête de zone principale : titre de la destination, à droite la commande « Se déconnecter ».
 - Pied de page : lien en clair vers https://p2enjoy.studio.
 - Aucune donnée n'est stockée dans le navigateur : la session est un cookie `HttpOnly` posé par le moteur, sans persistance (CLAUDE.md §11).
@@ -58,4 +58,4 @@ Aucun écart à ce jour.
 
 ## 7. Captures de référence
 
-Produites par les tests Playwright du parcours canonique dans `e2e/playwright/captures/` (JPEG) et `e2e/playwright/videos/` (webm), régénérées à chaque changement d'apparence.
+Produites par les tests Playwright du parcours canonique dans `e2e/playwright/captures/` (JPEG) et `e2e/playwright/videos/` (webm), régénérées à chaque changement d'apparence. Pages de bureau capturées en pleine page ; modales et écrans mobiles capturés sur la fenêtre visible, car les éléments fixes (voile, barre de navigation inférieure) ne couvrent que la fenêtre et fausseraient une capture pleine page.
