@@ -1,0 +1,20 @@
+# @spec docs/BACKLOG.md#RG-000 | docs/AUTOMATION.md#local-guards
+# Intégration continue : rejoue les garde-fous du socle et les contrôles rapides du projet.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  garde-fous:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Harnais des hooks du socle
+        run: tests/git-hooks/test-hooks
+      - name: Contrôles rapides du projet
+        run: scripts/project-pre-commit --all

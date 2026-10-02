@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+# @spec docs/BACKLOG.md#RG-000 | docs/AUTOMATION.md#pre-commit-hook
+# Contrôles rapides propres à RGPD Guard, appelés par le hook pre-commit du socle.
+# Usage : scripts/project-pre-commit          (fichiers indexés)
+#         scripts/project-pre-commit --all    (tous les fichiers suivis, pour la CI)
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+mode="staged"
+if [[ "${1:-}" == "--all" ]]; then
+  mode="all"
+fi
+
+violations=0
+report() {
+  printf 'ERREUR: %s\n' "$*" >&2
+  violations=$((violations + 1))
+}
+
+# Fichiers de méthode importés du socle P2Enjoy : repris tels quels, exclus du contrôle typographique.
+is_baseline_file() {
+  case "$1" in
+    CLAUDE.md|AGENTS.md|.gitignore|docs/CloudWorker.md|docs/DESIGN_SYSTEM.md|docs/.routine) return 0 ;;
+    .claude/agents/factory-*|.codex/*|.githooks/*|scripts/git-hooks/*|tests/git-hooks/*|LICENSES/*) return 0 ;;
+  esac
+  return 1
+}
+
+list_files() {
+  if [[ "$mode" == "all" ]]; then
+    git ls-files -z
+  else
+    git diff --cached --name-only --diff-filter=ACMRT -z
+  fi
+}
+
+read_file() {
+  if [[ "$mode" == "all" ]]; then
+    cat -- "$1"
+  else
+    git show ":$1"
+  fi
+}
+
+shell_files=()
+json_files=()
+python_files=()
+plugin_touched=false
+
+while IFS= read -r -d '' path; do
+  [[ -f "$path" ]] || continue
+  # Les fichiers du socle ont leurs propres garde-fous (tests/git-hooks/test-hooks).
+  if is_baseline_file "$path"; then
+    continue
+  fi
+  case "$path" in
+    plugins/*|.claude-plugin/*) plugin_touched=true ;;
+  esac
+  case "$path" in
+    *.json) json_files+=("$path") ;;
+    *.sh) shell_files+=("$path") ;;
+    *.py) python_files+=("$path") ;;
+  esac
+  # Tirets long (U+2014) et moyen (U+2013) interdits dans tout le projet.
+  if read_file "$path" | LC_ALL=C grep -q -e $'\xe2\x80\x94' -e $'\xe2\x80\x93'; then
+    line="$(read_file "$path" | LC_ALL=C grep -n -m 1 -e $'\xe2\x80\x94' -e $'\xe2\x80\x93' | cut -d: -f1)"
+    report "$path:$line contient un tiret long ou moyen (interdit, voir CLAUDE_PROJECT.md)"
+  fi
+done < <(list_files)
+
+for path in ${json_files[@]+"${json_files[@]}"}; do
+  if ! read_file "$path" | python3 -m json.tool >/dev/null 2>&1; then
+    report "$path n'est pas un JSON valide"
+  fi
+done
+
+for path in ${shell_files[@]+"${shell_files[@]}"}; do
+  interpreter="sh"
+  if read_file "$path" | head -n 1 | grep -q 'bash'; then
+    interpreter="bash"
+  fi
+  if ! read_file "$path" | "$interpreter" -n 2>/dev/null; then
+    report "$path : erreur de syntaxe $interpreter"
+  fi
+done
+
+if [[ "${#python_files[@]}" -gt 0 && -d engine ]]; then
+  ruff_bin=""
+  if [[ -x engine/.venv/bin/ruff ]]; then
+    ruff_bin="engine/.venv/bin/ruff"
+  elif command -v ruff >/dev/null 2>&1; then
+    ruff_bin="ruff"
+  fi
+  if [[ -n "$ruff_bin" ]]; then
+    if ! "$ruff_bin" check --quiet --config engine/pyproject.toml ${python_files[@]+"${python_files[@]}"}; then
+      report "ruff signale des erreurs"
+    fi
+  else
+    printf 'AVERTISSEMENT: ruff introuvable, lint Python non exécuté (lancer : cd engine && uv sync)\n' >&2
+  fi
+fi
+
+if [[ "$plugin_touched" == true && -d plugins/rgpd-guard ]]; then
+  if command -v claude >/dev/null 2>&1; then
+    if ! claude plugin validate plugins/rgpd-guard >/dev/null 2>&1; then
+      claude plugin validate plugins/rgpd-guard >&2 || true
+      report "le plugin ne passe pas claude plugin validate"
+    fi
+  else
+    printf 'AVERTISSEMENT: claude introuvable, validation du plugin non exécutée\n' >&2
+  fi
+fi
+
+[[ "$violations" -eq 0 ]] || { printf 'ERREUR: %s violation(s) dans les contrôles du projet\n' "$violations" >&2; exit 1; }
