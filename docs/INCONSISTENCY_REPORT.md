@@ -8,3 +8,9 @@ Origine : audit en lecture seule de la v0.1.0 avant la campagne de clôture, con
 
 - Constat : les manifestes portent tous 0.1.0, le CHANGELOG n'a pas d'entrée 0.1.0 et l'entrée du plugin dans `.claude-plugin/marketplace.json` n'a pas de version.
 - Concerne : RG-001, CHANGELOG.
+
+## IR-18 Cache des modèles illisible en partie par le moteur
+
+- Constat : à chaque démarrage et à chaque banc, le moteur journalise « Ignoring corrupted tree cache file … [Errno 13] Permission denied » pour Laya, GLiNER et l'encodeur de GLiNER (12 lignes au démarrage de la pile dev).
+- Mesure : `huggingface_hub` 1.33 écrit les fichiers `trees/<révision>.json` en mode 600 (propriétaire root, utilisateur du téléchargement) ; le moteur tourne sous l'uid 10001 et ne peut pas les lire. Même situation dans l'image de production, dont l'étape `models` télécharge en root. Le chargement aboutit, les journaux sont pollués.
+- Concerne : RG-008, RG-009, `engine/rgpd_guard/model_store.py`, [DAT §15](DAT.md#dependances).
