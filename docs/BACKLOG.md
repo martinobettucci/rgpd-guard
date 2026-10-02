@@ -23,7 +23,7 @@ Critères d'acceptation :
 Tests : `tests/git-hooks/test-hooks` (unitaire du socle), CI complète (E2E de la chaîne de contrôle).
 
 <a id="RG-001"></a>
-### [ ] RG-001 Plugin Claude Code, marketplace et client de hook fail-closed
+### [~] RG-001 Plugin Claude Code, marketplace et client de hook fail-closed
 
 Objectif : distribuer le plugin `rgpd-guard` par une marketplace hébergée dans ce dépôt et relayer chaque événement de hook vers le moteur local.
 
@@ -37,7 +37,7 @@ Critères d'acceptation :
 Tests : contrats du client (moteur démarré, arrêté, lent, réponse invalide) ; E2E Claude Code réel avec faux serveur API.
 
 <a id="RG-002"></a>
-### [ ] RG-002 Détecteur de règles et validateurs FR/UE
+### [~] RG-002 Détecteur de règles et validateurs FR/UE
 
 Objectif : détecter sans modèle les identifiants structurés, avec validation par somme de contrôle lorsqu'elle existe.
 
@@ -49,7 +49,7 @@ Critères d'acceptation :
 Tests : unitaires par type (positifs, négatifs, limites) ; E2E via le bac à sable et via le hook de prompt.
 
 <a id="RG-003"></a>
-### [ ] RG-003 Détecteur de secrets
+### [~] RG-003 Détecteur de secrets
 
 Objectif : détecter clés API, jetons et clés privées avant tout envoi.
 
@@ -61,7 +61,7 @@ Critères d'acceptation :
 Tests : unitaires (vrais positifs construits, faux positifs courants : hash, UUID, base64 d'image) ; E2E via le hook de prompt.
 
 <a id="RG-004"></a>
-### [ ] RG-004 Pseudonymisation réversible et coffre de session
+### [~] RG-004 Pseudonymisation réversible et coffre de session
 
 Objectif : remplacer chaque valeur sensible par un jeton stable `⟦TYPE_N⟧` et pouvoir réinjecter la valeur exacte localement.
 
@@ -73,7 +73,7 @@ Critères d'acceptation :
 Tests : unitaires (aller-retour, collisions, expiration, concurrence) ; E2E réhydratation d'un Edit sur disque.
 
 <a id="RG-005"></a>
-### [ ] RG-005 Blocage des prompts et proposition pseudonymisée
+### [~] RG-005 Blocage des prompts et proposition pseudonymisée
 
 Objectif : bloquer un prompt sensible avant qu'il n'atteigne le modèle et proposer une version pseudonymisée prête à copier.
 
@@ -87,7 +87,7 @@ Critères d'acceptation :
 Tests : unitaires de l'adaptateur ; E2E Claude Code réel : le faux serveur API ne reçoit jamais la valeur canari.
 
 <a id="RG-006"></a>
-### [ ] RG-006 Hooks d'outils : pseudonymisation des sorties, filet final et réhydratation
+### [~] RG-006 Hooks d'outils : pseudonymisation des sorties, filet final et réhydratation
 
 Objectif : empêcher qu'une sortie d'outil (fichier lu, commande, recherche, MCP) transmette une donnée sensible, sans casser l'édition des fichiers.
 
@@ -128,7 +128,7 @@ Critères d'acceptation : `urchade/gliner_multi_pii-v1` sur CPU, labels zero-sho
 Tests : unitaires (fusion, fenêtres) ; E2E bac à sable profil `max`.
 
 <a id="RG-010"></a>
-### [ ] RG-010 Profils, politiques et liste blanche
+### [~] RG-010 Profils, politiques et liste blanche
 
 Objectif : rendre la décision configurable sans code.
 
@@ -137,7 +137,7 @@ Critères d'acceptation : profils `rapide`, `equilibre`, `max` ; politique par t
 Tests : unitaires de résolution de politique ; API (refus d'une politique invalide) ; E2E page Politiques.
 
 <a id="RG-011"></a>
-### [ ] RG-011 Journal d'audit minimisé
+### [~] RG-011 Journal d'audit minimisé
 
 Objectif : tracer les décisions sans créer un nouveau gisement de données personnelles.
 
@@ -146,7 +146,7 @@ Critères d'acceptation : SQLite avec migrations versionnées ([SCHEMA](SCHEMA.m
 Tests : unitaires (aucune valeur brute stockée, purge) ; API ; E2E page Journal.
 
 <a id="RG-012"></a>
-### [ ] RG-012 Authentification locale par jeton
+### [~] RG-012 Authentification locale par jeton
 
 Objectif : réserver l'API au client de hook et au dashboard de l'utilisateur.
 

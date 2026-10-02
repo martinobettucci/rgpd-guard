@@ -1,0 +1,15 @@
+{
+  "name": "p2enjoy",
+  "description": "Plugins Claude Code publiés par P2Enjoy SAS",
+  "owner": {
+    "name": "P2Enjoy SAS",
+    "url": "https://p2enjoy.studio"
+  },
+  "plugins": [
+    {
+      "name": "rgpd-guard",
+      "source": "./plugins/rgpd-guard",
+      "description": "Bloque ou pseudonymise localement, sur CPU, les données personnelles et les secrets avant leur envoi au modèle."
+    }
+  ]
+}

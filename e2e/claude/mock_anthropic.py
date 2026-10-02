@@ -70,15 +70,49 @@ def build_stream(content: list[dict[str, Any]], model: str) -> bytes:
     ]
     for index, block in enumerate(content):
         if block["type"] == "text":
-            out.append(sse("content_block_start", {"type": "content_block_start", "index": index, "content_block": {"type": "text", "text": ""}}))
-            out.append(sse("content_block_delta", {"type": "content_block_delta", "index": index, "delta": {"type": "text_delta", "text": block["text"]}}))
+            out.append(
+                sse(
+                    "content_block_start",
+                    {"type": "content_block_start", "index": index, "content_block": {"type": "text", "text": ""}},
+                )
+            )
+            out.append(
+                sse(
+                    "content_block_delta",
+                    {
+                        "type": "content_block_delta",
+                        "index": index,
+                        "delta": {"type": "text_delta", "text": block["text"]},
+                    },
+                )
+            )
         else:
             start = {"type": "tool_use", "id": block["id"], "name": block["name"], "input": {}}
-            out.append(sse("content_block_start", {"type": "content_block_start", "index": index, "content_block": start}))
+            out.append(
+                sse("content_block_start", {"type": "content_block_start", "index": index, "content_block": start})
+            )
             partial = json.dumps(block.get("input", {}), ensure_ascii=False)
-            out.append(sse("content_block_delta", {"type": "content_block_delta", "index": index, "delta": {"type": "input_json_delta", "partial_json": partial}}))
+            out.append(
+                sse(
+                    "content_block_delta",
+                    {
+                        "type": "content_block_delta",
+                        "index": index,
+                        "delta": {"type": "input_json_delta", "partial_json": partial},
+                    },
+                )
+            )
         out.append(sse("content_block_stop", {"type": "content_block_stop", "index": index}))
-    out.append(sse("message_delta", {"type": "message_delta", "delta": {"stop_reason": stop_reason, "stop_sequence": None}, "usage": {"output_tokens": 5}}))
+    out.append(
+        sse(
+            "message_delta",
+            {
+                "type": "message_delta",
+                "delta": {"stop_reason": stop_reason, "stop_sequence": None},
+                "usage": {"output_tokens": 5},
+            },
+        )
+    )
     out.append(sse("message_stop", {"type": "message_stop"}))
     return b"".join(out)
 
@@ -108,7 +142,10 @@ def make_handler(state: ScenarioState, record_path: str):
 
         def _record(self, body_text: str) -> None:
             with record_lock, open(record_path, "a", encoding="utf-8") as handle:
-                handle.write(json.dumps({"method": self.command, "path": self.path, "body": body_text}, ensure_ascii=False) + "\n")
+                handle.write(
+                    json.dumps({"method": self.command, "path": self.path, "body": body_text}, ensure_ascii=False)
+                    + "\n"
+                )
 
         def _read_body(self) -> str:
             length = int(self.headers.get("Content-Length") or 0)

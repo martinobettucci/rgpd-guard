@@ -1,0 +1,75 @@
+# @spec docs/BACKLOG.md#RG-010 | docs/DAT.md#profils
+# Politique par défaut de RGPD Guard. Les surcharges faites depuis le dashboard sont stockées en base
+# et remplacent ce document entier (validé côté serveur).
+version: 1
+
+# Par type de span : action sur un prompt (block, warn, allow), action sur une sortie d'outil
+# (pseudonymize, allow) et score minimal de détection.
+labels:
+  PERSONNE: {prompt: block, tool_output: pseudonymize, min_score: 0.6}
+  EMAIL: {prompt: block, tool_output: pseudonymize, min_score: 0.5}
+  TELEPHONE: {prompt: block, tool_output: pseudonymize, min_score: 0.5}
+  ADRESSE: {prompt: block, tool_output: pseudonymize, min_score: 0.6}
+  IBAN: {prompt: block, tool_output: pseudonymize, min_score: 0.5}
+  CARTE_BANCAIRE: {prompt: block, tool_output: pseudonymize, min_score: 0.5}
+  NIR: {prompt: block, tool_output: pseudonymize, min_score: 0.5}
+  SIREN: {prompt: warn, tool_output: allow, min_score: 0.5}
+  SIRET: {prompt: warn, tool_output: allow, min_score: 0.5}
+  IP: {prompt: warn, tool_output: pseudonymize, min_score: 0.5}
+  PLAQUE: {prompt: block, tool_output: pseudonymize, min_score: 0.6}
+  DATE_NAISSANCE: {prompt: block, tool_output: pseudonymize, min_score: 0.6}
+  URL_SENSIBLE: {prompt: block, tool_output: pseudonymize, min_score: 0.6}
+  SECRET: {prompt: block, tool_output: pseudonymize, min_score: 0.7}
+  LIEU: {prompt: allow, tool_output: allow, min_score: 0.8}
+  ORGANISATION: {prompt: allow, tool_output: allow, min_score: 0.8}
+
+# Par catégorie sensible : seuil de probabilité et action.
+# block_if_identifier : bloque si un identifiant direct est présent dans le même texte, avertit sinon.
+categories:
+  SANTE: {threshold: 0.7, action: block_if_identifier}
+  OPINION_POLITIQUE: {threshold: 0.75, action: block_if_identifier}
+  RELIGION: {threshold: 0.75, action: block_if_identifier}
+  ORIENTATION_SEXUELLE: {threshold: 0.7, action: block_if_identifier}
+  ORIGINE_ETHNIQUE: {threshold: 0.75, action: block_if_identifier}
+  SYNDICAT: {threshold: 0.75, action: block_if_identifier}
+  JUDICIAIRE: {threshold: 0.75, action: block_if_identifier}
+  DONNEES_RH: {threshold: 0.75, action: block_if_identifier}
+  MINEUR: {threshold: 0.75, action: block_if_identifier}
+  CONFIDENTIEL: {threshold: 0.8, action: warn}
+
+# Valeurs jamais signalées : valeurs exactes (insensibles à la casse) et expressions régulières.
+allowlist:
+  values: []
+  patterns:
+    - '(?i)^[^@\s]+@example\.(com|org|net)$'
+    - '(?i)^[^@\s]+@[^@\s]+\.example$'
+
+# Fichiers dont la lecture est refusée (motifs sur le nom de fichier), et exceptions.
+secret_files:
+  - '.env'
+  - '.env.*'
+  - '*.pem'
+  - '*.key'
+  - 'id_rsa*'
+  - 'id_dsa*'
+  - 'id_ecdsa*'
+  - 'id_ed25519*'
+  - '*.kdbx'
+  - '*.p12'
+  - '*.pfx'
+  - '*.keystore'
+  - '.netrc'
+  - '.pgpass'
+  - '.npmrc'
+  - '.pypirc'
+  - 'credentials'
+  - 'credentials.json'
+secret_files_exceptions:
+  - '.env.example'
+  - '.env.sample'
+  - '.env.template'
+  - '*.pub'
+
+# Types jamais contournables par le préfixe de contournement.
+bypass_excluded:
+  - SECRET

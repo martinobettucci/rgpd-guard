@@ -87,19 +87,23 @@ for path in ${shell_files[@]+"${shell_files[@]}"}; do
 done
 
 if [[ "${#python_files[@]}" -gt 0 ]]; then
+  # ruff s'exécute depuis engine/ pour que sa configuration (ignores par dossier, imports internes) s'applique.
   ruff_bin=""
   if [[ -x engine/.venv/bin/ruff ]]; then
-    ruff_bin="engine/.venv/bin/ruff"
+    ruff_bin="$repo_root/engine/.venv/bin/ruff"
   elif command -v ruff >/dev/null 2>&1; then
     ruff_bin="ruff"
   fi
   if [[ -n "$ruff_bin" ]]; then
-    ruff_args=(check --quiet)
-    if [[ -f engine/pyproject.toml ]]; then
-      ruff_args+=(--config engine/pyproject.toml)
-    fi
-    if ! "$ruff_bin" "${ruff_args[@]}" ${python_files[@]+"${python_files[@]}"}; then
-      report "ruff signale des erreurs"
+    relative=()
+    for path in "${python_files[@]}"; do
+      case "$path" in
+        engine/*) relative+=("${path#engine/}") ;;
+        *) relative+=("../$path") ;;
+      esac
+    done
+    if ! (cd engine && "$ruff_bin" check --quiet "${relative[@]}" && "$ruff_bin" format --quiet --check "${relative[@]}"); then
+      report "ruff signale des erreurs (cd engine && uv run ruff check --fix . ../e2e && uv run ruff format . ../e2e)"
     fi
   else
     printf 'AVERTISSEMENT: ruff introuvable, lint Python non exécuté (lancer : cd engine && uv sync)\n' >&2

@@ -11,32 +11,34 @@ Version 0.1.0 en construction. L'état réel de chaque unité est tenu dans [doc
 | Brique | État |
 |---|---|
 | Socle d'usine logicielle (méthode, hooks Git, CI) | en place |
-| Plugin Claude Code et marketplace | à venir |
-| Moteur de détection (règles, secrets, spaCy, Laya, GLiNER) | à venir |
+| Plugin Claude Code, marketplace, client de hook fail-closed | implémenté, vérifié en E2E avec Claude Code réel |
+| Moteur : règles et validateurs, secrets, pseudonymisation réversible, politique, audit, authentification | implémenté, vérifié en E2E |
+| Moteur : spaCy, Laya, GLiNER | à venir |
 | Dashboard React + Vite | à venir |
 | Conteneurisation dev, staging, prod | à venir |
 
 ## Principe
 
-1. Un hook Claude Code transmet chaque prompt et chaque sortie d'outil à un moteur local (conteneur Docker sur 127.0.0.1).
-2. Le moteur combine des règles validées par somme de contrôle (IBAN, NIR, SIRET, cartes), un détecteur de secrets, spaCy, le classificateur calibré Laya et GLiNER, selon le profil choisi.
-3. Un prompt sensible est bloqué et une version pseudonymisée (`⟦EMAIL_1⟧`, `⟦PERSONNE_1⟧`...) est proposée ; les sorties d'outils sont pseudonymisées avant d'atteindre le modèle, et les vraies valeurs sont réinjectées localement quand Claude écrit un fichier.
+1. Un hook Claude Code transmet chaque prompt et chaque sortie d'outil au moteur local.
+2. Le moteur combine des règles validées par somme de contrôle (IBAN, NIR, SIRET, cartes), un détecteur de secrets et, selon le profil, spaCy, le classificateur calibré Laya et GLiNER.
+3. Un prompt sensible est bloqué et une version pseudonymisée (`⟦EMAIL_1⟧`, `⟦IBAN_1⟧`...) est proposée ; les sorties d'outils sont pseudonymisées avant d'atteindre le modèle ; les vraies valeurs sont réinjectées localement quand Claude écrit un fichier.
+4. Si le moteur ne répond pas, le plugin bloque par défaut (`fail_mode=closed`).
 
 Architecture détaillée : [docs/DAT.md](docs/DAT.md). Décisions et investigations : [docs/JOURNAL.md](docs/JOURNAL.md).
 
 ## Stack
 
 - Moteur : Python 3.12, uv, FastAPI, SQLite.
-- Détection CPU : python-stdnum, phonenumbers, spaCy, Laya, GLiNER.
-- Dashboard : React, Vite, TypeScript.
+- Détection CPU : python-stdnum, phonenumbers (puis spaCy, Laya, GLiNER).
 - Plugin : JSON, POSIX `sh`, `curl`.
-- Conteneurs : Docker Compose (dev, staging, prod).
+- Dashboard : React, Vite, TypeScript (à venir).
+- Conteneurs : Docker Compose (à venir).
 
 ## Prérequis
 
-- Git, Bash.
-- Docker avec Compose v2 (à partir de l'unité RG-018).
-- Claude Code pour utiliser le plugin.
+- Git, Bash, `curl`.
+- [uv](https://docs.astral.sh/uv/) (installe Python 3.12 si besoin).
+- Claude Code pour utiliser le plugin et pour les tests E2E.
 
 ## Installation pour contribuer
 
@@ -46,44 +48,91 @@ cd rgpd-guard
 git config --local user.name "<nom du responsable>"
 git config --local user.email "<adresse du responsable>"
 scripts/git-hooks/install
+cd engine && uv sync --group dev
 ```
 
-## Commandes disponibles
+## Lancer le moteur en développement (natif, en attendant Docker)
+
+```bash
+cd engine
+RGPD_GUARD_TOKEN=dev-token-local RGPD_GUARD_HMAC_KEY=dev-hmac-local \
+RGPD_GUARD_DATA_DIR=../data RGPD_GUARD_ENABLED_DETECTORS=rules,secrets RGPD_GUARD_PROFILE=rapide \
+RGPD_GUARD_WORKSPACE_ROOT="$HOME" RGPD_GUARD_HOST=127.0.0.1 \
+uv run python -m rgpd_guard
+```
+
+Le moteur écoute sur http://127.0.0.1:8742 (`GET /health` pour vérifier).
+
+## Installer le plugin dans Claude Code
+
+```text
+/plugin marketplace add martinobettucci/rgpd-guard
+/plugin install rgpd-guard@p2enjoy
+```
+
+Options du plugin (demandées à l'activation, modifiables dans `/config`) :
+
+| Option | Rôle | Défaut |
+|---|---|---|
+| `engine_url` | adresse du moteur | fichier `~/.config/rgpd-guard/engine.env`, sinon `http://127.0.0.1:8742` |
+| `engine_token` | jeton du moteur (stockage sécurisé) | fichier `~/.config/rgpd-guard/engine.env` |
+| `fail_mode` | `closed` : blocage si le moteur ne répond pas ; `open` : avertissement | `closed` |
+| `profile` | `defaut`, `rapide`, `equilibre`, `max` | `defaut` (profil du moteur) |
+
+Commandes du plugin : `/rgpd-guard:status`, `/rgpd-guard:scan <fichier>`, `/rgpd-guard:dashboard`. Préfixe `#rgpd-ok` : envoi ponctuel malgré une détection (jamais pour un secret), journalisé.
+
+## Tests
 
 | Usage | Commande |
 |---|---|
-| Activer les hooks Git du socle | `scripts/git-hooks/install` |
-| Tester les hooks du socle | `tests/git-hooks/test-hooks` |
-| Contrôles rapides du projet sur tout le dépôt | `scripts/project-pre-commit --all` |
+| Tests unitaires et API du moteur | `cd engine && uv run pytest` |
+| Lint, format, typage | `cd engine && uv run ruff check . && uv run ruff format --check . && uv run mypy` |
+| Contrats du client de hook | `cd engine && uv run pytest ../e2e/claude/test_hook_client.py` |
+| E2E Claude Code réel (faux serveur API, aucune clé requise) | `cd engine && uv run pytest ../e2e/claude/test_claude_e2e.py` |
+| Hooks du socle | `tests/git-hooks/test-hooks` |
+| Contrôles rapides du projet | `scripts/project-pre-commit --all` |
+| Validation du plugin et de la marketplace | `claude plugin validate plugins/rgpd-guard && claude plugin validate .` |
 
-Les commandes de démarrage, de seed, de test et de build de la pile sont documentées ici dès qu'elles existent.
+## Variables d'environnement du moteur
 
-## Variables d'environnement
-
-Aucune pour le moment. Les fichiers d'environnement vivront dans `config/environments/` (voir [CLAUDE_PROJECT.md](CLAUDE_PROJECT.md)).
+| Variable | Rôle | Obligatoire | Exemple |
+|---|---|---|---|
+| `RGPD_GUARD_TOKEN` | jeton des hooks et du dashboard | oui | chaîne aléatoire de 32 caractères |
+| `RGPD_GUARD_HMAC_KEY` | clé des empreintes du journal | oui | chaîne aléatoire |
+| `RGPD_GUARD_ENV` | `dev`, `staging`, `prod` | non | `dev` |
+| `RGPD_GUARD_PROFILE` | profil par défaut | non | `equilibre` |
+| `RGPD_GUARD_ENABLED_DETECTORS` | composants chargés | non | `rules,secrets,spacy,laya,gliner` |
+| `RGPD_GUARD_DATA_DIR` | dossier de la base SQLite | non | `/data` |
+| `RGPD_GUARD_WORKSPACE_ROOT` | dossier lisible pour les mentions `@` et `/rgpd-guard:scan` | non | `/home/moi` |
+| `RGPD_GUARD_AUDIT_RETENTION_DAYS` | rétention du journal | non | `30` |
+| `RGPD_GUARD_AUDIT_PREVIEW` | conserver un aperçu masqué | non | `true` |
+| `RGPD_GUARD_VAULT_TTL_SECONDS` | durée de vie des pseudonymes | non | `43200` |
+| `RGPD_GUARD_ALLOWED_HOSTS` | en-têtes Host acceptés | non | `127.0.0.1,localhost,engine` |
+| `RGPD_GUARD_CORS_ORIGINS` | origines autorisées à modifier | non | `http://127.0.0.1:8743` |
+| `RGPD_GUARD_HOST`, `RGPD_GUARD_PORT` | écoute | non | `0.0.0.0`, `8742` |
 
 ## Structure du dépôt
 
 ```text
 .
-├── CLAUDE.md, AGENTS.md          # méthode globale du socle P2Enjoy (MPL-2.0)
-├── CLAUDE_PROJECT.md             # règles locales du projet
-├── .claude/agents/, .codex/      # sous-agents bornés du socle
+├── .claude-plugin/marketplace.json   # marketplace "p2enjoy"
+├── plugins/rgpd-guard/               # plugin Claude Code (manifeste, hooks, client sh, commandes)
+├── engine/                           # moteur Python (détecteurs, politique, coffre, audit, API)
+│   ├── rgpd_guard/
+│   └── tests/                        # tests unitaires et API, fixtures de payloads réels
+├── e2e/claude/                       # faux serveur API, contrats du client, E2E Claude Code
+├── docs/                             # DAT, BACKLOG, JOURNAL, SCHEMA, AUTOMATION, design system
+├── CLAUDE.md, AGENTS.md, .claude/, .codex/      # méthode du socle P2Enjoy (MPL-2.0)
 ├── .githooks/, scripts/git-hooks/, tests/git-hooks/   # garde-fous Git du socle
-├── scripts/project-pre-commit    # contrôles rapides propres au projet
-├── docs/
-│   ├── DAT.md                    # dossier d'architecture technique
-│   ├── BACKLOG.md                # unités de travail et état réel
-│   ├── JOURNAL.md                # décisions et investigations
-│   ├── AUTOMATION.md             # contrat des garde-fous exécutables
-│   ├── DESIGN_SYSTEM.md          # design system global P2Enjoy
-│   └── CloudWorker.md, .routine  # contrat du worker planifié
-└── LICENSES/MPL-2.0.txt
+└── scripts/project-pre-commit        # contrôles rapides propres au projet
 ```
 
 ## Limites connues
 
-Le produit n'est pas encore utilisable : seul le socle et la spécification sont en place.
+- Détecteurs à modèles (spaCy, Laya, GLiNER), dashboard et conteneurs pas encore livrés : en profil `rapide`, les noms de personnes en texte libre ne sont pas détectés.
+- Non couverts par conception (voir [DAT §13](docs/DAT.md#compromis)) : images collées, contenus injectés par Claude Code sans hook (CLAUDE.md, mémoire, état git), télémétrie de Claude Code (`DISABLE_TELEMETRY=1` recommandé), contenu analysé côté serveur par WebFetch.
+- Une commande en échec dont la sortie contient une donnée arrête la boucle (filet `PostToolBatch`) ; le résultat reste dans la conversation locale et doit être retiré avec `/rewind`.
+- Un Edit dont l'`old_string` contient un jeton est refusé par Claude Code avant tout hook ; Claude est guidé pour choisir un texte voisin ou réécrire le fichier.
 
 ## Licence
 

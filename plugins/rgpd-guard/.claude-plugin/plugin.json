@@ -1,0 +1,42 @@
+{
+  "name": "rgpd-guard",
+  "displayName": "RGPD Guard",
+  "version": "0.1.0",
+  "description": "Vérifie en local, sur CPU, que vous n'envoyez pas de données personnelles (RGPD) ni de secrets au modèle : blocage des prompts sensibles avec proposition pseudonymisée, pseudonymisation réversible des sorties d'outils.",
+  "author": {
+    "name": "Martino Bettucci, P2Enjoy SAS",
+    "url": "https://p2enjoy.studio"
+  },
+  "homepage": "https://github.com/martinobettucci/rgpd-guard",
+  "repository": "https://github.com/martinobettucci/rgpd-guard",
+  "license": "MIT",
+  "keywords": ["rgpd", "gdpr", "pii", "privacy", "secrets", "pseudonymisation"],
+  "userConfig": {
+    "engine_url": {
+      "type": "string",
+      "title": "Adresse du moteur",
+      "description": "URL du moteur RGPD Guard local. Vide : valeur écrite par le dernier lanceur démarré (~/.config/rgpd-guard/engine.env), sinon http://127.0.0.1:8742.",
+      "default": ""
+    },
+    "engine_token": {
+      "type": "string",
+      "title": "Jeton du moteur",
+      "description": "Jeton d'accès du moteur. Vide : jeton écrit par le lanceur dans ~/.config/rgpd-guard/engine.env.",
+      "sensitive": true
+    },
+    "fail_mode": {
+      "type": "string",
+      "title": "Si le moteur ne répond pas",
+      "description": "closed : prompts et outils bloqués tant que le moteur est arrêté (recommandé). open : simple avertissement.",
+      "options": ["closed", "open"],
+      "default": "closed"
+    },
+    "profile": {
+      "type": "string",
+      "title": "Profil de détection",
+      "description": "defaut : profil configuré dans le moteur. rapide : règles et secrets. equilibre : + spaCy et Laya. max : + GLiNER.",
+      "options": ["defaut", "rapide", "equilibre", "max"],
+      "default": "defaut"
+    }
+  }
+}

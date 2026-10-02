@@ -94,3 +94,16 @@ Faux serveur de l'API Messages (`e2e/claude/mock_anthropic.py`) rejouant des sc�
 4. **Pas de hook `UserPromptExpansion`.** Motif : `UserPromptSubmit` voit déjà le texte brut avec les arguments ; un seul chemin de contrôle. Limite : la sortie des commandes `!` exécutées dans le corps d'une commande slash n'est vue par aucun hook.
 5. **Pas de pseudonymisation des sorties de Write, Edit, MultiEdit et NotebookEdit dans `PostToolUse`.** Motif : le modèle ne reçoit qu'un message de succès fixe ; `PostToolBatch` reste le juge final si une version future y ajoutait du contenu.
 6. **Sorties de commandes en échec** : pas d'enveloppe de commande (elle modifierait l'évaluation des règles de permission) ; le filet `PostToolBatch` bloque avant l'envoi, avec la consigne `/rewind`. Amélioration possible inscrite au backlog (RG-021).
+
+## 2026-10-02 : moteur cœur, plugin et premiers E2E Claude Code
+
+### Observations
+
+- Le premier E2E réel (Read d'un fichier synthétique) a révélé une fuite : le numéro `06 39 98 12 34`, dans une tranche fictive ARCEP, n'est pas « valide » pour les métadonnées de libphonenumber et n'était pas détecté.
+- Les sept scénarios E2E (prompt bloqué, Read pseudonymisé, Edit réhydraté sur disque, commande en échec arrêtée par le filet, mention `@` bloquante, fichier `.env` refusé, moteur arrêté) passent ensuite sans qu'aucune valeur canari n'atteigne le faux serveur API.
+
+### Décisions
+
+1. **Format téléphonique français en complément de libphonenumber** (score 0,85, non validé) : couvre les tranches récentes, fictives ou absentes des métadonnées. La fusion garde le span validé lorsqu'il existe.
+2. **Commande `/rgpd-guard:scan` adossée à `POST /v1/scan`** : le moteur lit le fichier dans le dossier monté et ne renvoie que des comptages, car la sortie d'une commande slash est transmise au modèle. Écarté : envoyer le contenu depuis le script `sh` (échappement JSON fragile sans dépendance).
+3. **Bibliothèque `common.sh` partagée par les scripts du plugin**, avec un garde dans `guard-hook.sh` : si elle manque, le client bloque au lieu de laisser passer.

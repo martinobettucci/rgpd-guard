@@ -137,7 +137,7 @@ La validation d'Edit précédant les hooks, la consigne injectée à Claude (Ses
 
 | Nom | Type | Profils | Contenu |
 |---|---|---|---|
-| `rules` | spans | tous | email, téléphone (phonenumbers), IBAN, carte bancaire, NIR, SIREN, SIRET (python-stdnum), IP publique, plaque SIV, date de naissance contextuelle, adresse postale FR, URL sensible |
+| `rules` | spans | tous | email, téléphone (phonenumbers, plus le format français hors métadonnées), IBAN, carte bancaire, NIR, SIREN, SIRET (python-stdnum), IP publique, plaque SIV, date de naissance contextuelle, adresse postale FR, URL sensible |
 | `secrets` | spans | tous | préfixes de fournisseurs, JWT, clés PEM, affectations à forte entropie |
 | `spacy` | spans | `equilibre`, `max` | `fr_core_news_md`, `en_core_web_md` : personnes, lieux |
 | `gliner` | spans | `max` | `urchade/gliner_multi_pii-v1`, labels zero-shot |
@@ -171,7 +171,7 @@ Pour un fichier source (selon son extension) et pour les blocs de code délimit�
 | `equilibre` (défaut) | rapide, spacy, laya sur les prompts | moins de 600 ms par prompt |
 | `max` | equilibre, gliner, laya sur les sorties | mesurée par le banc |
 
-Politique (fichier par défaut `engine/policies/default.yaml`, surcharges persistées en base) :
+Politique (fichier par défaut `engine/rgpd_guard/policies/default.yaml`, surcharges persistées en base) :
 - par type de span : action sur prompt (`block`, `warn`, `allow`), action sur sortie (`pseudonymize`, `allow`), score minimal ;
 - par catégorie : seuil de probabilité et action (`block_if_identifier`, `warn`, `allow`) ;
 - liste blanche de valeurs et de motifs ;
@@ -205,7 +205,8 @@ Le journal d'audit est lui même un traitement de données personnelles (minimis
 |---|---|---|
 | `GET /health` | public | état, version, détecteurs prêts |
 | `POST /v1/hooks/{event}` | jeton | adaptateur d'événement Claude Code |
-| `POST /v1/analyze` | jeton ou session | analyse d'un texte (bac à sable, commande `/rgpd-guard:scan`) |
+| `POST /v1/analyze` | jeton ou session | analyse d'un texte (bac à sable) ; `summary=true` ne renvoie que des comptages |
+| `POST /v1/scan` | jeton | comptages par type pour un fichier du dossier monté (commande `/rgpd-guard:scan`), aucune valeur renvoyée |
 | `POST /v1/auth/session`, `DELETE /v1/auth/session` | jeton, session | ouverture et fermeture de session dashboard |
 | `GET /v1/audit/events`, `GET /v1/audit/stats` | session | journal paginé, statistiques |
 | `GET /v1/policies`, `PUT /v1/policies` | session | lecture et écriture validée de la politique |
