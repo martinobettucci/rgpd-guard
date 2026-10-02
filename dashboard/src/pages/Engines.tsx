@@ -90,11 +90,13 @@ export function Engines() {
                   <li key={component.name}>
                     <div>
                       <div className="mono">{component.name}</div>
-                      <div className="help">
-                        {Object.values(component.detail).join(" · ") ||
-                          (component.load_ms ? t("engines.loadTime", { ms: formatMs(component.load_ms) }) : "")}
-                        {component.error ? <span className="mono"> {component.error}</span> : null}
-                      </div>
+                      {Object.keys(component.detail).length > 0 ? (
+                        <div className="help">{Object.values(component.detail).join(" · ")}</div>
+                      ) : null}
+                      {component.ready ? (
+                        <div className="help">{t("engines.loadTime", { ms: formatMs(component.load_ms) })}</div>
+                      ) : null}
+                      {component.error ? <div className="help mono">{component.error}</div> : null}
                     </div>
                     {component.ready ? (
                       <Badge tone="success" icon={CircleCheck}>

@@ -100,6 +100,9 @@ test("moteurs : composants prêts et profils", async ({ page }, testInfo) => {
     await expect(components.getByText(name, { exact: true })).toBeVisible();
   }
   await expect(components.getByText("Indisponible")).toHaveCount(0);
+  // Temps de chargement mesuré pour chaque composant, y compris les détecteurs sans modèle (« < 1 ms »).
+  await expect(components.getByText(/^Chargement : /)).toHaveCount(5);
+  await expect(components.getByRole("listitem").filter({ hasText: "rules" }).getByText(/^Chargement : <\s1 ms$/)).toBeVisible();
   const profiles = page.getByRole("region", { name: "Profils" });
   await expect(profiles.getByText("Catégories sensibles : laya sur les prompts", { exact: true })).toBeVisible();
   await expect(profiles.getByText("Catégories sensibles : laya sur les prompts et les sorties d'outils")).toBeVisible();

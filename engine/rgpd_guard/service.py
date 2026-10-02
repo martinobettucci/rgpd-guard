@@ -28,10 +28,17 @@ MODEL_COMPONENTS: dict[str, tuple[str, str, str]] = {
 }
 
 
+def _elapsed_ms(started: float) -> float:
+    return round((time.perf_counter() - started) * 1000, 3)
+
+
 def build_registry(settings: Settings) -> Registry:
     registry = Registry()
-    registry.add_detector(RulesDetector())
-    registry.add_detector(SecretsDetector())
+    # Détecteurs sans modèle : toujours chargés, leur temps de chargement est mesuré comme celui des autres.
+    for factory in (RulesDetector, SecretsDetector):
+        started = time.perf_counter()
+        detector = factory()
+        registry.add_detector(detector, _elapsed_ms(started))
     enabled = settings.detectors_list
     for name, (module_name, factory, kind) in MODEL_COMPONENTS.items():
         if name not in enabled:
@@ -44,7 +51,7 @@ def build_registry(settings: Settings) -> Registry:
             log.warning("composant %s indisponible : %s", name, exc)
             registry.mark_failed(name, kind, f"{type(exc).__name__}: {exc}"[:300])
             continue
-        load_ms = round((time.perf_counter() - started) * 1000, 1)
+        load_ms = _elapsed_ms(started)
         if kind == "detecteur":
             registry.add_detector(component, load_ms, detail)
         else:

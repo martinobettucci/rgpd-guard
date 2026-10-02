@@ -9,7 +9,7 @@ Référence complémentaire à [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md), lue intégr
   - **Journal** (`/journal`) : événements traités par le moteur ;
   - **Bac à sable** (`/bac-a-sable`) : analyse d'un texte saisi ;
   - **Politiques** (`/politiques`) : règles de décision ;
-  - **Moteurs** (`/moteurs`) : état des détecteurs, détecteurs et classificateurs de chaque profil, banc d'évaluation (synthèse par profil, détail par type de donnée et par catégorie sensible pour le profil choisi).
+  - **Moteurs** (`/moteurs`) : état et temps de chargement de chaque composant (sous ses modèles et leur licence), détecteurs et classificateurs de chaque profil, banc d'évaluation (synthèse par profil, détail par type de donnée et par catégorie sensible pour le profil choisi).
 - En-tête de zone principale : titre de la destination, à droite la commande « Se déconnecter ».
 - Pied de page : lien en clair vers https://p2enjoy.studio.
 - Aucune donnée n'est stockée dans le navigateur : la session est un cookie `HttpOnly` posé par le moteur, sans persistance (CLAUDE.md §11).

@@ -4,11 +4,6 @@ Défauts constatés hors de l'unité en cours, à résoudre par la boucle dédi�
 
 Origine : audit en lecture seule de la v0.1.0 avant la campagne de clôture, constats revérifiés à la main.
 
-## IR-05 Le temps de chargement des composants n'est jamais affiché
-
-- Constat : RG-016 exige l'état et le temps de chargement de chaque détecteur. `Engines.tsx:94-95` n'affiche `load_ms` que lorsque `detail` est vide, or spaCy, GLiNER et Laya renvoient toujours un détail ; `rules` et `secrets` sont enregistrés avec `load_ms=0` (`service.py:32-33`).
-- Concerne : RG-016, page Moteurs.
-
 ## IR-07 Modèles spaCy 3.7 chargés par spaCy 3.8
 
 - Constat : avertissement W095 à chaque chargement (« trained with spaCy v3.7.0 and may not be 100% compatible with the current version (3.8.16) »).

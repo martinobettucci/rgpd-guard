@@ -112,6 +112,8 @@ def test_engines_status(logged_client: TestClient) -> None:
     body = logged_client.get("/v1/engines").json()
     names = {c["name"] for c in body["components"]}
     assert {"rules", "secrets"} <= names and body["profiles"]["rapide"]["missing"] == []
+    # Chaque composant prêt porte un temps de chargement mesuré, y compris les détecteurs sans modèle.
+    assert all(c["load_ms"] > 0 for c in body["components"] if c["ready"])
     assert body["profiles"]["equilibre"]["classifiers_prompt"] == ["laya"]
     assert body["labels"]["IBAN"] == "IBAN" and body["categories"]["SANTE"] == "santé"
 
