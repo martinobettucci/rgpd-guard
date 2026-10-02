@@ -13,7 +13,7 @@ Ce que le produit couvre :
 - les sorties d'outils transmises au modèle (fichiers lus, commandes, recherches, outils MCP) ;
 - la réinjection locale des valeurs réelles lorsque Claude écrit des fichiers.
 
-Ce que le produit ne couvre pas (limites détaillées au [§12](#compromis)) : images collées, contenus que Claude Code injecte sans hook (CLAUDE.md, mémoire, état git), télémétrie de l'outil, contenu analysé côté serveur par WebFetch.
+Ce que le produit ne couvre pas (limites détaillées au [§14](#compromis)) : images collées, contenus que Claude Code injecte sans hook (CLAUDE.md, mémoire, état git), télémétrie de l'outil, contenu analysé côté serveur par WebFetch.
 
 <a id="composants"></a>
 ## 2. Composants
@@ -167,9 +167,11 @@ Pour un fichier source (selon son extension) et pour les blocs de code délimit�
 
 | Profil | Détecteurs | Cible de latence |
 |---|---|---|
-| `rapide` | rules, secrets | moins de 20 ms |
-| `equilibre` (défaut) | rapide, spacy, laya sur les prompts | moins de 600 ms par prompt |
-| `max` | equilibre, gliner, laya sur les sorties | mesurée par le banc |
+| `rapide` | rules, secrets | p95 mesuré inférieur à 1 ms |
+| `equilibre` (défaut) | rapide, spacy, laya sur les prompts | p95 mesuré 1,1 s par prompt (4 vCPU) |
+| `max` | equilibre, gliner, laya sur les sorties | p95 mesuré 1,3 s par prompt (4 vCPU) |
+
+Mesures, calibration des seuils et limites : [journal du banc d'évaluation](JOURNAL.md).
 
 Politique (fichier par défaut `engine/rgpd_guard/policies/default.yaml`, surcharges persistées en base) :
 - par type de span : action sur prompt (`block`, `warn`, `allow`), action sur sortie (`pseudonymize`, `allow`), score minimal ;
@@ -222,8 +224,16 @@ Le journal d'audit est lui même un traitement de données personnelles (minimis
 - Conteneurs non root, système de fichiers en lecture seule, `HF_HUB_OFFLINE=1`, ports publiés uniquement sur 127.0.0.1 (moteur 8742, dashboard 8743 ; staging 18742 et 18743). Le port 8765, utilisé par le plugin AISafe de Maya Data Privacy, est évité.
 - Journalisation applicative : jamais de valeur détectée, de prompt ni de jeton.
 
+<a id="donnees-dev"></a>
+## 12. Données de développement
+
+- **Corpus étiqueté** : `seeds/generate.py` produit, avec une graine fixe, des textes FR/EN synthétiques (Faker) dont chaque valeur sensible est étiquetée par position. Identifiants à somme de contrôle valide mais fictifs (IBAN, NIR, SIRET, cartes), numéros de téléphone dans les tranches fictives de l'ARCEP, faux secrets assemblés à l'exécution. Sortie dans `seeds/out/` (ignorée par git).
+- **Banc d'évaluation** : `python -m rgpd_guard.bench` mesure précision, rappel, F1 et latences par profil sur ce corpus.
+- **Journal de démonstration** : les événements d'audit de l'environnement de développement sont créés en rejouant le corpus à travers le véritable endpoint de hook, jamais insérés directement en base.
+- **Jeton de développement** : valeur fixe et non sensible dans `config/environments/dev.env`.
+
 <a id="deploiement"></a>
-## 12. Déploiement, reprise et environnements
+## 13. Déploiement, reprise et environnements
 
 | Environnement | Fichiers | Données |
 |---|---|---|
@@ -234,7 +244,7 @@ Le journal d'audit est lui même un traitement de données personnelles (minimis
 Reprise : la base SQLite vit dans un volume nommé ; sa perte n'efface que le journal et les surcharges de politique (la politique par défaut est dans l'image). Le coffre de pseudonymes est volontairement volatil.
 
 <a id="compromis"></a>
-## 13. Choix techniques et compromis
+## 14. Choix techniques et compromis
 
 - Détection locale sur CPU uniquement : aucun appel réseau à l'exécution, modèles intégrés à l'image.
 - spaCy français sous licence LGPL-LR : modèle téléchargé à la construction de l'image, jamais versionné dans le dépôt.
@@ -242,6 +252,8 @@ Reprise : la base SQLite vit dans un volume nommé ; sa perte n'efface que le jo
 - Limites connues : images collées ; contenus injectés sans hook (CLAUDE.md, mémoire, état git, sortie des commandes `!` d'une commande slash) ; télémétrie de Claude Code (désactivable par `DISABLE_TELEMETRY=1`) ; contenu analysé côté serveur par WebFetch ; sortie d'une commande en échec arrêtée par le seul filet `PostToolBatch`, qui laisse le résultat dans la conversation (consigne `/rewind`) ; transcript local qui conserve le texte d'un prompt bloqué ; Edit dont l'`old_string` contient un jeton refusé par Claude Code avant tout hook.
 
 <a id="dependances"></a>
-## 14. Dépendances structurantes
+## 15. Dépendances structurantes
 
-Les licences sont recensées dans `THIRD_PARTY_NOTICES.md` au fur et à mesure de leur introduction.
+Les licences sont recensées dans [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
+
+Les modèles sont épinglés par révision dans `engine/rgpd_guard/model_store.py`, téléchargés par `python -m rgpd_guard.model_store <cache>` dans un cache Hugging Face local, puis lus hors ligne (`HF_HOME` vers ce cache, `HF_HUB_OFFLINE=1`). torch est installé depuis l'index CPU de PyTorch (aucune bibliothèque CUDA). Le banc d'évaluation (`python -m rgpd_guard.bench <corpus>`) écrit `bench/latest.json` dans le dossier de données, lu par la page Moteurs.

@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     deadline_ms: int = Field(default=15000, ge=100, description="Échéance d'analyse, au-delà profil rapide seul")
     max_ner_chars: int = Field(default=20000, ge=1000, description="Taille maximale d'un texte soumis aux modèles")
     max_text_chars: int = Field(default=2_000_000, ge=10000, description="Au-delà, le texte est remplacé par un avis")
+    torch_threads: int = Field(default=4, ge=1, le=64, description="Fils CPU utilisés par torch (Laya, GLiNER)")
     test_endpoints: bool = Field(default=False, description="Endpoints de test (dev uniquement)")
 
     @property

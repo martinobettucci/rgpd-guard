@@ -82,7 +82,9 @@ def test_phone_fr_format_outside_metadata() -> None:
     assert Label.TELEPHONE not in labels("commande 2024-06-12 lot 12345")
 
 
-@pytest.mark.parametrize("text", ["serveur 10.0.0.12", "localhost 127.0.0.1", "doc 192.0.2.10", "version 1.2.3.4"])
+@pytest.mark.parametrize(
+    "text", ["serveur 10.0.0.12", "localhost 127.0.0.1", "doc 192.0.2.10", "version 1.2.3.4", "version: 1.2.3.4"]
+)
 def test_non_public_ip_ignored(text: str) -> None:
     assert Label.IP not in labels(text)
 

@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# @spec docs/BACKLOG.md#RG-000 | docs/AUTOMATION.md#pre-commit-hook
+# Vérifie que chaque référence `docs/FICHIER.md#ancre` citée par @spec ou @verifies désigne une ancre
+# explicite (<a id="ancre">) existant dans le document. Usage : scripts/check-spec-refs [fichiers...]
+set -euo pipefail
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+if [[ "$#" -eq 0 ]]; then
+  files=()
+  while IFS= read -r line; do files+=("$line"); done < <(git ls-files)
+else
+  files=("$@")
+fi
+missing=0
+while IFS= read -r ref; do
+  doc="${ref%%#*}"
+  anchor="${ref#*#}"
+  if [[ ! -f "$doc" ]]; then
+    printf 'ERREUR: référence vers un document absent : %s\n' "$ref" >&2
+    missing=$((missing + 1))
+  elif ! grep -q "<a id=\"$anchor\"></a>" "$doc"; then
+    printf 'ERREUR: ancre absente : %s\n' "$ref" >&2
+    missing=$((missing + 1))
+  fi
+done < <(for f in "${files[@]}"; do
+    # Documents, données et fichiers du socle (exemples génériques de références) exclus.
+    case "$f" in *.md|*.json|LICENSE|LICENSES/*|.githooks/*|scripts/git-hooks/*|tests/git-hooks/*|.claude/*|.codex/*) continue ;; esac
+    [[ -f "$f" ]] && grep -hoE '@(spec|verifies) .*' "$f" 2>/dev/null || true
+  done \
+  | grep -oE 'docs/[A-Za-z_]+\.md#[A-Za-z0-9_.-]+' | sort -u)
+[[ "$missing" -eq 0 ]] || { printf 'ERREUR: %s référence(s) de traçabilité invalide(s)\n' "$missing" >&2; exit 1; }

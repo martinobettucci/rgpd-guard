@@ -110,6 +110,17 @@ if [[ "${#python_files[@]}" -gt 0 ]]; then
   fi
 fi
 
+# Références de traçabilité : chaque docs/FICHIER.md#ancre citée doit exister.
+if [[ "$mode" == "all" ]]; then
+  scripts/check-spec-refs || report "références @spec / @verifies invalides"
+else
+  staged=()
+  while IFS= read -r line; do staged+=("$line"); done < <(git diff --cached --name-only --diff-filter=ACMRT)
+  if [[ "${#staged[@]}" -gt 0 ]]; then
+    scripts/check-spec-refs "${staged[@]}" || report "références @spec / @verifies invalides"
+  fi
+fi
+
 if [[ "$plugin_touched" == true && -d plugins/rgpd-guard ]]; then
   if command -v claude >/dev/null 2>&1; then
     if ! claude plugin validate plugins/rgpd-guard >/dev/null 2>&1; then

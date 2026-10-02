@@ -29,7 +29,7 @@ _IPV4_RE = re.compile(
     r"(?<![\d.])(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?![\d.])"
 )
 _IPV6_RE = re.compile(r"(?<![\w:])(?:[0-9a-fA-F]{1,4}:){2,7}[0-9a-fA-F]{0,4}(?::[0-9a-fA-F]{1,4})*(?![\w:])")
-_VERSION_CONTEXT_RE = re.compile(r"(version|v|release|ver\.?)\s*$", re.IGNORECASE)
+_VERSION_CONTEXT_RE = re.compile(r"(version|v|release|ver\.?)[\s:=\"']*$", re.IGNORECASE)
 # Format français, y compris les tranches récentes ou fictives absentes des métadonnées de libphonenumber.
 _FR_PHONE_RE = re.compile(r"(?<![\d+])(?:\+33\s?|0033\s?|0)[1-9](?:[ .-]?\d{2}){4}(?!\d)")
 _PLATE_RE = re.compile(r"\b(?!SS|WW)[A-HJ-NP-TV-Z]{2}[- ]\d{3}[- ](?!SS)[A-HJ-NP-TV-Z]{2}\b")

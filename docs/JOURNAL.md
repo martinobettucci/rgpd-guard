@@ -107,3 +107,36 @@ Faux serveur de l'API Messages (`e2e/claude/mock_anthropic.py`) rejouant des sc�
 1. **Format téléphonique français en complément de libphonenumber** (score 0,85, non validé) : couvre les tranches récentes, fictives ou absentes des métadonnées. La fusion garde le span validé lorsqu'il existe.
 2. **Commande `/rgpd-guard:scan` adossée à `POST /v1/scan`** : le moteur lit le fichier dans le dossier monté et ne renvoie que des comptages, car la sortie d'une commande slash est transmise au modèle. Écarté : envoyer le contenu depuis le script `sh` (échappement JSON fragile sans dépendance).
 3. **Bibliothèque `common.sh` partagée par les scripts du plugin**, avec un garde dans `guard-hook.sh` : si elle manque, le client bloque au lieu de laisser passer.
+
+## 2026-10-02 : modèles CPU, corpus seedé et banc d'évaluation
+
+### Problème
+
+Choisir et calibrer la combinaison de moteurs CPU (spaCy, Laya, GLiNER) avec des mesures plutôt qu'avec des intuitions.
+
+### Méthode
+
+- Modèles épinglés par révision (`engine/rgpd_guard/model_store.py`) et téléchargés une fois dans un cache Hugging Face local, lu hors ligne (`HF_HUB_OFFLINE=1`). La référence `main` de chaque dépôt pointe vers la révision épinglée, car le tokenizer de GLiNER (`microsoft/mdeberta-v3-base`) est résolu par identifiant.
+- Corpus seedé déterministe (`seeds/generate.py`, graine 20261002) : 70 textes FR/EN, 101 valeurs étiquetées, 15 textes à catégorie sensible, négatifs (code, documentation, jetons, gabarits).
+- Banc `python -m rgpd_guard.bench` sur 4 vCPU Intel Xeon 2,8 GHz, 4 fils torch.
+
+### Observations (mesurées)
+
+| Profil | Précision | Rappel | F1 | Latence p50 | Latence p95 |
+|---|---|---|---|---|---|
+| `rapide` | 1,000 | 0,515 | 0,680 | 0,2 ms | 0,5 ms |
+| `equilibre` | 0,980 | 0,980 | 0,980 | 749 ms | 1 074 ms |
+| `max` | 0,981 | 1,000 | 0,990 | 1 000 ms | 1 312 ms |
+
+- Identifiants structurés (IBAN, NIR, carte, téléphone, email, SIRET, IP, plaque, date de naissance, secrets) : F1 de 1,0 dans les trois profils. Le profil `rapide` ne voit aucun nom de personne (rappel 0 sur PERSONNE), d'où son rappel global.
+- PERSONNE : spaCy seul 0,96 de précision et de rappel ; GLiNER porte le rappel à 1,0. Faux positifs restants : noms propres d'écoles ou de salles (« Jules Ferry », « Turing »).
+- Temps de chargement au démarrage : spaCy 9 s, Laya 10 s, GLiNER 33 s ; inférence spaCy 10 ms, GLiNER 220 à 360 ms, Laya environ 1 s pour dix questions.
+- Laya : les probabilités d'une question sont identiques qu'elle soit posée seule ou parmi dix (une passe de dix questions coûte 1,0 s contre 1,9 s en dix passes). Formulation en anglais simple centrée sur une personne nettement meilleure qu'une formulation en français ou juridique. Rappel des catégories sensibles : 9 sur 15 (60 %) ; aucun déclenchement bloquant sur les textes sans identifiant ; MINEUR non reconnu par le modèle en zero-shot (0,01).
+- Le banc a révélé deux défauts corrigés : générateur de plaques utilisant des lettres exclues du SIV (I, O, U) ; numéro de version `version: 1.2.3.4` pris pour une IP publique.
+
+### Décisions
+
+1. **Seuils des catégories calibrés sur ces mesures** (`policies/default.yaml`) : santé 0,4 ; opinions politiques 0,35 ; religion 0,3 ; orientation 0,3 ; judiciaire 0,3 ; syndicat 0,6 ; données RH 0,65 ; origine et mineur 0,5 faute de données ; confidentiel 0,8 (avertissement seulement). Motif : rappel maximal sans blocage de texte général ; les seuils plus bas déclenchaient des avertissements sur des questions générales (« différence entre un syndicat et une association »).
+2. **Laya reste un complément en version bêta** : il qualifie, il ne localise pas ; un rappel de 60 % ne permet pas de s'y fier seul. Amélioration possible : affinage sur des décisions du domaine (Laya le prévoit), inscrite au backlog (RG-022).
+3. **Cible de latence du profil `equilibre` révisée** de moins de 600 ms à la mesure réelle (p95 1,1 s sur 4 vCPU) : un prompt est saisi par un humain, une seconde reste acceptable ; le profil `rapide` répond en moins d'une milliseconde pour qui préfère la vitesse.
+4. **Une seule passe Laya de dix questions** plutôt que des passes séparées (même calibration, deux fois plus rapide).

@@ -101,7 +101,7 @@ Critères d'acceptation :
 Tests : unitaires du parcours de forme et de la réhydratation ; E2E Claude Code réel : Read pseudonymisé, Edit réhydraté sur disque, canari jamais transmis.
 
 <a id="RG-007"></a>
-### [ ] RG-007 Détecteur spaCy (FR, EN)
+### [~] RG-007 Détecteur spaCy (FR, EN)
 
 Objectif : localiser les personnes et les lieux dans le texte libre.
 
@@ -110,7 +110,7 @@ Critères d'acceptation : `fr_core_news_md` et `en_core_web_md` chargés au dém
 Tests : unitaires sur corpus FR/EN ; E2E bac à sable profil `equilibre`.
 
 <a id="RG-008"></a>
-### [ ] RG-008 Classificateur Laya des catégories sensibles
+### [~] RG-008 Classificateur Laya des catégories sensibles
 
 Objectif : estimer avec des probabilités calibrées si un texte révèle une catégorie sensible (art. 9 RGPD, RH, mineurs, confidentialité).
 
@@ -119,7 +119,7 @@ Critères d'acceptation : `convaiinnovations/laya-multilingual` exécuté sur CP
 Tests : unitaires de la règle d'escalade (classificateur simulé par contrat documenté) et intégration réelle du modèle ; E2E bac à sable.
 
 <a id="RG-009"></a>
-### [ ] RG-009 Détecteur GLiNER PII (profil max)
+### [~] RG-009 Détecteur GLiNER PII (profil max)
 
 Objectif : rappel maximal multilingue sur les entités non structurées.
 
@@ -183,7 +183,7 @@ Critères d'acceptation : état et temps de chargement de chaque détecteur, der
 Tests : unitaires ; E2E Playwright.
 
 <a id="RG-017"></a>
-### [ ] RG-017 Seeds déterministes et banc d'évaluation
+### [~] RG-017 Seeds déterministes et banc d'évaluation
 
 Critères d'acceptation : générateur à graine fixe (Faker fr_FR et en_US) produisant un corpus étiqueté, positifs et négatifs ; identifiants à checksum valide mais fictifs ; secrets construits à l'exécution ; événements d'audit créés via le véritable endpoint de hook ; banc d'évaluation par profil.
 
@@ -212,3 +212,8 @@ Comparer `fastino/gliner2-privacy-filter-PII-multi` et `OpenMed/privacy-filter-m
 ### [ ] RG-021 Sorties de commandes en échec
 
 Aujourd'hui, une commande en échec dont la sortie contient une donnée est arrêtée par le filet `PostToolBatch`, ce qui laisse le résultat dans la conversation. Étudier une enveloppe de commande qui ne change pas l'évaluation des règles de permission, afin que `PostToolUse` puisse pseudonymiser ces sorties.
+
+<a id="RG-022"></a>
+### [ ] RG-022 Affinage de Laya sur les catégories sensibles
+
+Le rappel zero-shot mesuré est de 60 % (9 sur 15), avec un échec complet sur MINEUR. Constituer un jeu de décisions étiquetées (FR, EN) et affiner `laya-multilingual` selon la procédure de son auteur, puis recalibrer les seuils par le banc.

@@ -13,7 +13,8 @@ Version 0.1.0 en construction. L'état réel de chaque unité est tenu dans [doc
 | Socle d'usine logicielle (méthode, hooks Git, CI) | en place |
 | Plugin Claude Code, marketplace, client de hook fail-closed | implémenté, vérifié en E2E avec Claude Code réel |
 | Moteur : règles et validateurs, secrets, pseudonymisation réversible, politique, audit, authentification | implémenté, vérifié en E2E |
-| Moteur : spaCy, Laya, GLiNER | à venir |
+| Moteur : spaCy, Laya, GLiNER (CPU, hors ligne) | implémenté, mesuré par le banc d'évaluation |
+| Corpus seedé et banc d'évaluation | en place |
 | Dashboard React + Vite | à venir |
 | Conteneurisation dev, staging, prod | à venir |
 
@@ -29,7 +30,7 @@ Architecture détaillée : [docs/DAT.md](docs/DAT.md). Décisions et investigati
 ## Stack
 
 - Moteur : Python 3.12, uv, FastAPI, SQLite.
-- Détection CPU : python-stdnum, phonenumbers (puis spaCy, Laya, GLiNER).
+- Détection CPU : python-stdnum, phonenumbers, spaCy, Laya, GLiNER (torch CPU, modèles épinglés et lus hors ligne).
 - Plugin : JSON, POSIX `sh`, `curl`.
 - Dashboard : React, Vite, TypeScript (à venir).
 - Conteneurs : Docker Compose (à venir).
@@ -48,7 +49,8 @@ cd rgpd-guard
 git config --local user.name "<nom du responsable>"
 git config --local user.email "<adresse du responsable>"
 scripts/git-hooks/install
-cd engine && uv sync --group dev
+cd engine && uv sync --group dev --extra nlp --extra laya --extra gliner
+uv run python -m rgpd_guard.model_store ../models-cache   # environ 1,9 Go, une seule fois
 ```
 
 ## Lancer le moteur en développement (natif, en attendant Docker)
@@ -56,12 +58,22 @@ cd engine && uv sync --group dev
 ```bash
 cd engine
 RGPD_GUARD_TOKEN=dev-token-local RGPD_GUARD_HMAC_KEY=dev-hmac-local \
-RGPD_GUARD_DATA_DIR=../data RGPD_GUARD_ENABLED_DETECTORS=rules,secrets RGPD_GUARD_PROFILE=rapide \
-RGPD_GUARD_WORKSPACE_ROOT="$HOME" RGPD_GUARD_HOST=127.0.0.1 \
+RGPD_GUARD_DATA_DIR=../data RGPD_GUARD_WORKSPACE_ROOT="$HOME" RGPD_GUARD_HOST=127.0.0.1 \
+HF_HOME=../models-cache HF_HUB_OFFLINE=1 \
 uv run python -m rgpd_guard
 ```
 
-Le moteur écoute sur http://127.0.0.1:8742 (`GET /health` pour vérifier).
+Le moteur écoute sur http://127.0.0.1:8742 (`GET /health` pour vérifier) ; le chargement des modèles prend environ une minute. Sans modèles, ajouter `RGPD_GUARD_ENABLED_DETECTORS=rules,secrets RGPD_GUARD_PROFILE=rapide`.
+
+## Seeds et banc d'évaluation
+
+```bash
+cd engine
+uv run python ../seeds/generate.py                       # corpus déterministe dans seeds/out/
+HF_HOME=../models-cache HF_HUB_OFFLINE=1 uv run python -m rgpd_guard.bench ../seeds/out/corpus.jsonl --out ../data/bench/latest.json
+```
+
+Résultats de référence (4 vCPU) : profil `rapide` F1 0,68 en moins d'une milliseconde (aucun nom de personne), `equilibre` F1 0,98 en 0,75 s (p50), `max` F1 0,99 en 1,0 s (p50). Détail dans [le journal](docs/JOURNAL.md).
 
 ## Installer le plugin dans Claude Code
 
@@ -86,6 +98,7 @@ Commandes du plugin : `/rgpd-guard:status`, `/rgpd-guard:scan <fichier>`, `/rgpd
 | Usage | Commande |
 |---|---|
 | Tests unitaires et API du moteur | `cd engine && uv run pytest` |
+| Tests d'inférence sur les modèles réels | `cd engine && HF_HOME=../models-cache HF_HUB_OFFLINE=1 uv run pytest -m models` |
 | Lint, format, typage | `cd engine && uv run ruff check . && uv run ruff format --check . && uv run mypy` |
 | Contrats du client de hook | `cd engine && uv run pytest ../e2e/claude/test_hook_client.py` |
 | E2E Claude Code réel (faux serveur API, aucune clé requise) | `cd engine && uv run pytest ../e2e/claude/test_claude_e2e.py` |
@@ -110,6 +123,8 @@ Commandes du plugin : `/rgpd-guard:status`, `/rgpd-guard:scan <fichier>`, `/rgpd
 | `RGPD_GUARD_ALLOWED_HOSTS` | en-têtes Host acceptés | non | `127.0.0.1,localhost,engine` |
 | `RGPD_GUARD_CORS_ORIGINS` | origines autorisées à modifier | non | `http://127.0.0.1:8743` |
 | `RGPD_GUARD_HOST`, `RGPD_GUARD_PORT` | écoute | non | `0.0.0.0`, `8742` |
+| `RGPD_GUARD_TORCH_THREADS` | fils CPU de torch (Laya, GLiNER) | non | `4` |
+| `HF_HOME`, `HF_HUB_OFFLINE` | cache local des modèles, interdiction de tout téléchargement | oui avec modèles | `/models`, `1` |
 
 ## Structure du dépôt
 
@@ -117,9 +132,10 @@ Commandes du plugin : `/rgpd-guard:status`, `/rgpd-guard:scan <fichier>`, `/rgpd
 .
 ├── .claude-plugin/marketplace.json   # marketplace "p2enjoy"
 ├── plugins/rgpd-guard/               # plugin Claude Code (manifeste, hooks, client sh, commandes)
-├── engine/                           # moteur Python (détecteurs, politique, coffre, audit, API)
+├── engine/                           # moteur Python (détecteurs, modèles CPU, politique, coffre, audit, API, banc)
 │   ├── rgpd_guard/
 │   └── tests/                        # tests unitaires et API, fixtures de payloads réels
+├── seeds/                            # générateur déterministe du corpus étiqueté
 ├── e2e/claude/                       # faux serveur API, contrats du client, E2E Claude Code
 ├── docs/                             # DAT, BACKLOG, JOURNAL, SCHEMA, AUTOMATION, design system
 ├── CLAUDE.md, AGENTS.md, .claude/, .codex/      # méthode du socle P2Enjoy (MPL-2.0)
@@ -129,8 +145,10 @@ Commandes du plugin : `/rgpd-guard:status`, `/rgpd-guard:scan <fichier>`, `/rgpd
 
 ## Limites connues
 
-- Détecteurs à modèles (spaCy, Laya, GLiNER), dashboard et conteneurs pas encore livrés : en profil `rapide`, les noms de personnes en texte libre ne sont pas détectés.
-- Non couverts par conception (voir [DAT §13](docs/DAT.md#compromis)) : images collées, contenus injectés par Claude Code sans hook (CLAUDE.md, mémoire, état git), télémétrie de Claude Code (`DISABLE_TELEMETRY=1` recommandé), contenu analysé côté serveur par WebFetch.
+- Dashboard et conteneurs pas encore livrés.
+- En profil `rapide`, les noms de personnes en texte libre ne sont pas détectés.
+- Catégories sensibles (Laya, zero-shot) : rappel mesuré de 60 %, aucune reconnaissance des données concernant un mineur ; à considérer comme une couche complémentaire (bêta).
+- Non couverts par conception (voir [DAT §14](docs/DAT.md#compromis)) : images collées, contenus injectés par Claude Code sans hook (CLAUDE.md, mémoire, état git), télémétrie de Claude Code (`DISABLE_TELEMETRY=1` recommandé), contenu analysé côté serveur par WebFetch.
 - Une commande en échec dont la sortie contient une donnée arrête la boucle (filet `PostToolBatch`) ; le résultat reste dans la conversation locale et doit être retiré avec `/rewind`.
 - Un Edit dont l'`old_string` contient un jeton est refusé par Claude Code avant tout hook ; Claude est guidé pour choisir un texte voisin ou réécrire le fichier.
 
