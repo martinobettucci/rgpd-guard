@@ -4,11 +4,6 @@ Défauts constatés hors de l'unité en cours, à résoudre par la boucle dédi�
 
 Origine : audit en lecture seule de la v0.1.0 avant la campagne de clôture, constats revérifiés à la main.
 
-## IR-10 Routes de session absentes du DAT, critère « `/health` seul public » inexact
-
-- Constat : le tableau du [DAT §10](DAT.md#api) omet `GET /v1/auth/session` et `POST /v1/policies/reset` (`api.py:223`, `api.py:271`) ; le critère de RG-012 affirme que `/health` est la seule route publique, alors que l'ouverture, la lecture et la fermeture de session le sont par nature.
-- Concerne : RG-012, RG-015, DAT.
-
 ## IR-11 Délais emboîtés : règle énoncée pour tous les hooks
 
 - Constat : le [DAT §3](DAT.md#flux-hooks) affirme que chaque délai contient le suivant, jusqu'à l'échéance du moteur (15 s). Or `curl --max-time` vaut 10 s pour PreToolUse et 5 s pour SessionStart et SubagentStart (`hooks/hooks.json`).

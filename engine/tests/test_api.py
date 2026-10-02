@@ -51,6 +51,16 @@ def test_admin_routes_require_session(client: TestClient, auth_headers: dict[str
         assert client.get(path).status_code == 401
         # Le jeton des hooks n'ouvre pas les routes d'administration : il faut une session.
         assert client.get(path, headers=auth_headers).status_code == 401
+    # Écritures de la politique : même règle, y compris le rétablissement de la politique par défaut.
+    for method, path in (("PUT", "/v1/policies"), ("POST", "/v1/policies/reset")):
+        assert client.request(method, path, json={}).status_code == 401
+        assert client.request(method, path, json={}, headers=auth_headers).status_code == 401
+
+
+def test_session_routes_are_public_but_reveal_nothing(client: TestClient) -> None:
+    # Routes publiques par nature (ouvrir, lire, fermer une session) : la lecture ne renvoie que l'état.
+    assert client.get("/v1/auth/session").json() == {"authenticated": False}
+    assert client.delete("/v1/auth/session").json() == {"authenticated": False}
 
 
 def test_login_logout(client: TestClient) -> None:

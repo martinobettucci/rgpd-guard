@@ -150,7 +150,7 @@ Tests : unitaires (aucune valeur brute stockée, purge) ; API ; E2E page Journal
 
 Objectif : réserver l'API au client de hook et au dashboard de l'utilisateur.
 
-Critères d'acceptation : jeton en en-tête pour les hooks et l'API ; session dashboard par cookie `HttpOnly`, `SameSite=Strict`, sans persistance ; contrôle de l'en-tête Host et de l'origine ; CORS restreint ; `/health` seul public.
+Critères d'acceptation : jeton en en-tête pour les hooks et l'API ; session dashboard par cookie `HttpOnly`, `SameSite=Strict`, sans persistance ; contrôle de l'en-tête Host et de l'origine ; CORS restreint ; seules `/health` et les routes de session (ouverture par jeton, lecture qui ne renvoie que l'état de connexion, fermeture) sont publiques.
 
 Tests : API directe sans jeton, jeton faux, Host étranger, origine étrangère : refus ; E2E connexion et déconnexion depuis l'accueil.
 

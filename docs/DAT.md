@@ -210,9 +210,11 @@ Le journal d'audit est lui même un traitement de données personnelles (minimis
 | `POST /v1/hooks/{event}` | jeton | adaptateur d'événement Claude Code |
 | `POST /v1/analyze` | jeton ou session | analyse d'un texte (bac à sable) ; `summary=true` ne renvoie que des comptages |
 | `POST /v1/scan` | jeton | comptages par type pour un fichier du dossier monté (commande `/rgpd-guard:scan`), aucune valeur renvoyée |
-| `POST /v1/auth/session`, `DELETE /v1/auth/session` | jeton, session | ouverture et fermeture de session dashboard |
+| `POST /v1/auth/session` | public, jeton dans le corps | ouverture de session dashboard (cookie `HttpOnly`, `SameSite=Strict`) |
+| `GET /v1/auth/session`, `DELETE /v1/auth/session` | public | état de connexion (booléen seul) et fermeture de session |
 | `GET /v1/audit/events`, `GET /v1/audit/stats` | session | journal paginé, statistiques |
 | `GET /v1/policies`, `PUT /v1/policies` | session | lecture et écriture validée de la politique |
+| `POST /v1/policies/reset` | session | rétablissement de la politique par défaut |
 | `GET /v1/engines` | session | état des détecteurs et dernier banc d'évaluation |
 
 <a id="securite"></a>
