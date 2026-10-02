@@ -4,11 +4,6 @@ Défauts constatés hors de l'unité en cours, à résoudre par la boucle dédi�
 
 Origine : audit en lecture seule de la v0.1.0 avant la campagne de clôture, constats revérifiés à la main.
 
-## IR-12 SCHEMA.md décalé de la migration
-
-- Constat : `audit_events.event` cite une valeur `analyze` qu'aucun code n'écrit (le bac à sable ne journalise pas) ; les colonnes `id` de `audit_entities` et `policies` (`migrations/001_init.sql:23,36`) manquent.
-- Concerne : RG-011, [SCHEMA](SCHEMA.md).
-
 ## IR-13 Commande `/rgpd-guard:dashboard` et aide de connexion divergentes
 
 - Constat : `plugins/rgpd-guard/commands/dashboard.md` renvoie à `./runProd.sh token` seul, l'aide de la page d'accueil (`dashboard/src/i18n/fr.ts:28`) à `./runDev.sh token` puis aux autres lanceurs.

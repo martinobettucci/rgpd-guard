@@ -36,7 +36,7 @@ Un événement de hook traité par le moteur.
 | `ts` | TEXT | date ISO 8601 UTC, sert à la purge par rétention |
 | `session_hash` | TEXT | HMAC tronqué du `session_id` Claude Code |
 | `subagent` | INTEGER | 1 si l'événement provient d'un sous-agent |
-| `event` | TEXT | `user_prompt_submit`, `pre_tool_use`, `post_tool_use`, `post_tool_use_failure`, `post_tool_batch`, `analyze` |
+| `event` | TEXT | `user_prompt_submit`, `pre_tool_use`, `post_tool_use`, `post_tool_use_failure`, `post_tool_batch` (le bac à sable n'écrit pas au journal) |
 | `tool` | TEXT | nom de l'outil le cas échéant |
 | `decision` | TEXT | `block`, `warn`, `pseudonymize`, `allow`, `deny`, `rehydrate`, `leak` |
 | `profile` | TEXT | profil appliqué |
@@ -51,6 +51,7 @@ Un événement de hook traité par le moteur.
 
 | Colonne | Type | Rôle |
 |---|---|---|
+| `id` | INTEGER, clé | identifiant |
 | `event_id` | INTEGER | événement parent (suppression en cascade) |
 | `label` | TEXT | type de donnée (taxonomie du DAT) |
 | `detector` | TEXT | détecteur à l'origine du span |
@@ -63,6 +64,7 @@ Un événement de hook traité par le moteur.
 
 | Colonne | Type | Rôle |
 |---|---|---|
+| `id` | INTEGER, clé | identifiant |
 | `version` | INTEGER | version du document de politique |
 | `document` | TEXT | politique complète validée (JSON) |
 | `updated_at` | TEXT | date ISO 8601 UTC |
