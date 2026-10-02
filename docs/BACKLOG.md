@@ -30,7 +30,7 @@ Objectif : distribuer le plugin `rgpd-guard` par une marketplace hébergée dans
 Critères d'acceptation :
 - `.claude-plugin/marketplace.json` à la racine et `plugins/rgpd-guard/.claude-plugin/plugin.json` valides (`claude plugin validate`) ;
 - hooks déclarés : SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, PostToolUseFailure, PostToolBatch, SubagentStart ([DAT §3](DAT.md#flux-hooks)) ;
-- client `scripts/guard-hook.sh` POSIX `sh` + `curl`, sans dépendance, jeton jamais passé en argument de commande, `--noproxy '*'` ;
+- client `plugins/rgpd-guard/scripts/guard-hook.sh` POSIX `sh` + `curl`, sans dépendance, jeton jamais passé en argument de commande, `--noproxy '*'` ;
 - moteur injoignable, en erreur ou trop lent : blocage des prompts et refus des outils lorsque `fail_mode=closed` (défaut), avertissement seul lorsque `fail_mode=open` ;
 - options utilisateur : `engine_url`, `engine_token` (sensible), `fail_mode`, `profile`.
 

@@ -4,16 +4,6 @@ Défauts constatés hors de l'unité en cours, à résoudre par la boucle dédi�
 
 Origine : audit en lecture seule de la v0.1.0 avant la campagne de clôture, constats revérifiés à la main.
 
-## IR-16 Dérives de documentation
-
-- Constat :
-  - README « État du projet » : « implémenté, vérifié en E2E » alors que le BACKLOG garde toutes les unités à `[~]` ;
-  - README : `./runDev.sh test` présenté comme « toute la batterie », alors qu'il n'exécute ni l'E2E Claude Code, ni les harnais des lanceurs et des hooks ;
-  - arborescence du README sans `tests/launchers/` ni `config/` ;
-  - BACKLOG RG-001 : chemin `scripts/guard-hook.sh` au lieu de `plugins/rgpd-guard/scripts/guard-hook.sh` ;
-  - JOURNAL (décisions du cadrage) : environnements exécutables côte à côte, alors que dev et prod partagent les ports 8742 et 8743.
-- Concerne : README, BACKLOG, JOURNAL.
-
 ## IR-17 Version 0.1.0 absente du CHANGELOG et de la marketplace
 
 - Constat : les manifestes portent tous 0.1.0, le CHANGELOG n'a pas d'entrée 0.1.0 et l'entrée du plugin dans `.claude-plugin/marketplace.json` n'a pas de version.

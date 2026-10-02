@@ -6,17 +6,9 @@ Projet P2Enjoy SAS, construit selon le socle [P2Enjoy/software-factory-base](htt
 
 ## État du projet
 
-Version 0.1.0 en construction. L'état réel de chaque unité est tenu dans [docs/BACKLOG.md](docs/BACKLOG.md).
+Version 0.1.0, non publiée. L'état de chaque unité (non commencée, en cours, terminée et vérifiée) est tenu à un seul endroit : [docs/BACKLOG.md](docs/BACKLOG.md).
 
-| Brique | État |
-|---|---|
-| Socle d'usine logicielle (méthode, hooks Git, CI) | en place |
-| Plugin Claude Code, marketplace, client de hook fail-closed | implémenté, vérifié en E2E avec Claude Code réel |
-| Moteur : règles et validateurs, secrets, pseudonymisation réversible, politique, audit, authentification | implémenté, vérifié en E2E |
-| Moteur : spaCy, Laya, GLiNER (CPU, hors ligne) | implémenté, mesuré par le banc d'évaluation |
-| Corpus seedé et banc d'évaluation | en place |
-| Dashboard React + Vite (Journal, Bac à sable, Politiques, Moteurs) | implémenté |
-| Conteneurisation dev, staging, prod et lanceurs | implémenté |
+Contenu de la version : socle d'usine logicielle (méthode, hooks Git, CI) ; plugin Claude Code, marketplace et client de hook fail-closed ; moteur local (règles et validateurs, secrets, pseudonymisation réversible, politique, audit, authentification) ; détecteurs CPU hors ligne spaCy, Laya et GLiNER ; corpus seedé et banc d'évaluation ; tableau de bord React + Vite (Journal, Bac à sable, Politiques, Moteurs) ; conteneurisation dev, staging, prod et lanceurs.
 
 ## Principe
 
@@ -115,7 +107,7 @@ Commandes du plugin : `/rgpd-guard:status`, `/rgpd-guard:scan <fichier>`, `/rgpd
 
 | Usage | Commande |
 |---|---|
-| Toute la batterie dans les conteneurs (moteur, contrats, tableau de bord) | `./runDev.sh test` |
+| Moteur, contrats du client de hook et tableau de bord, dans les conteneurs (les autres suites de ce tableau s'exécutent séparément) | `./runDev.sh test` |
 | Parcours E2E du tableau de bord (Playwright, captures JPEG et vidéos webm) | `./runDev.sh e2e` |
 | Tests unitaires et API du moteur | `cd engine && uv run pytest` |
 | Tableau de bord : typage, tests, textes, contrastes | `cd dashboard && npm run typecheck && npm test && npm run check:i18n && npm run check:contrast` |
@@ -209,6 +201,7 @@ Les options du plugin priment ; à défaut, le client lit ces variables dans l'e
 ├── docs/                             # DAT, BACKLOG, JOURNAL, SCHEMA, AUTOMATION, design system
 ├── CLAUDE.md, AGENTS.md, .claude/, .codex/      # méthode du socle P2Enjoy (MPL-2.0)
 ├── .githooks/, scripts/git-hooks/, tests/git-hooks/   # garde-fous Git du socle
+├── tests/launchers/, tests/project/  # harnais des lanceurs et du contrôle de traçabilité
 └── scripts/project-pre-commit        # contrôles rapides propres au projet
 ```
 
