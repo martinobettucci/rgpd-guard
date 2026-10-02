@@ -4,12 +4,6 @@ Défauts constatés hors de l'unité en cours, à résoudre par la boucle dédi�
 
 Origine : audit en lecture seule de la v0.1.0 avant la campagne de clôture, constats revérifiés à la main.
 
-## IR-01 Un clone neuf ne peut pas construire les images
-
-- Constat : `docker-compose.yml:44` et `scripts/stack.sh:23` prennent `config/build/ca-empty.pem` comme valeur par défaut de `BUILD_CA_BUNDLE`, mais ce fichier n'est pas suivi : la règle `[Bb]uild/` du `.gitignore` du socle l'ignore.
-- Mesure : `git ls-files config/build` est vide ; `git check-ignore -v config/build/ca-empty.pem` renvoie `.gitignore:29:[Bb]uild/`. Le harnais `tests/launchers/test-launchers:57` crée le fichier lui-même, ce qui masque le défaut.
-- Concerne : RG-018, [DAT §12](DAT.md#deploiement).
-
 ## IR-02 `.gitignore` du socle modifié
 
 - Constat : une section « RGPD Guard (projet) » de 18 lignes a été ajoutée à la fin du `.gitignore` importé (commit `24edff6`). Le socle le présente comme une base générique globale et RG-000 exige un import sans modification.

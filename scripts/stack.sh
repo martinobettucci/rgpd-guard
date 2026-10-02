@@ -20,7 +20,7 @@ export ENGINE_PORT="${ENGINE_PORT:-$DEFAULT_ENGINE_PORT}"
 export DASHBOARD_PORT="${DASHBOARD_PORT:-$DEFAULT_DASHBOARD_PORT}"
 export RGPD_GUARD_WORKSPACE_ROOT="${RGPD_GUARD_WORKSPACE_ROOT:-$HOME}"
 export BUILD_NETWORK="${BUILD_NETWORK:-default}"
-export BUILD_CA_BUNDLE="${BUILD_CA_BUNDLE:-$REPO/config/build/ca-empty.pem}"
+export BUILD_CA_BUNDLE="${BUILD_CA_BUNDLE:-$REPO/config/ca/empty.pem}"
 export BUILD_HTTPS_PROXY="${BUILD_HTTPS_PROXY:-}"
 ENV_FILE="config/environments/$STACK_ENV.env"
 # Nom du lanceur (compatible bash 3.2 de macOS, sans ${var^}).

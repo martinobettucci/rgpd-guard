@@ -52,7 +52,7 @@ services:
       NODE_EXTRA_CA_CERTS: /etc/rgpd-guard/ca.pem
     volumes:
       - ./e2e/playwright:/e2e
-      - ${BUILD_CA_BUNDLE:-./config/build/ca-empty.pem}:/etc/rgpd-guard/ca.pem:ro
+      - ${BUILD_CA_BUNDLE:-./config/ca/empty.pem}:/etc/rgpd-guard/ca.pem:ro
     command:
       - sh
       - -c

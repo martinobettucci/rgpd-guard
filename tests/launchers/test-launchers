@@ -49,12 +49,12 @@ done
 # Dépôt temporaire : lanceurs, logique commune, fichiers Compose et modèles d'environnement.
 new_repo() {
   local repo="$test_root/repo-$1"
-  mkdir -p "$repo/scripts" "$repo/config/environments" "$repo/config/build" "$repo/bin" "$repo/home"
+  mkdir -p "$repo/scripts" "$repo/config/environments" "$repo/bin" "$repo/home"
   cp "$source_root"/run{Dev,Staging,Prod}.sh "$repo/"
   cp "$source_root/scripts/stack.sh" "$repo/scripts/"
   cp "$source_root"/docker-compose*.yml "$repo/"
   cp "$source_root/config/environments/dev.env" "$source_root"/config/environments/*.env.example "$repo/config/environments/"
-  : >"$repo/config/build/ca-empty.pem"
+  mkdir -p "$repo/config/ca" && cp "$source_root/config/ca/empty.pem" "$repo/config/ca/"
   cat >"$repo/bin/docker" <<'SH'
 #!/usr/bin/env bash
 printf '%s\n' "$*" >>"$CALLS"
@@ -164,6 +164,14 @@ INPUT="prod" launch "$repo" runProd.sh reset
 check "prod reset : confirmé, données supprimées" grep -qx "compose -p rgpd-guard-prod -f docker-compose.yml -f docker-compose.prod.yml down -v" "$repo/calls"
 launch "$repo" runDev.sh reset
 check "dev reset : sans confirmation" grep -qx "compose -p rgpd-guard-dev -f docker-compose.yml -f docker-compose.dev.yml down -v" "$repo/calls"
+
+# 9. Paquet CA par défaut : un clone neuf doit construire sans proxy, donc le fichier vide cité par le
+# lanceur et par Compose est suivi par git (aucune règle d'exclusion ne doit l'atteindre).
+default_ca="$(sed -n 's|^export BUILD_CA_BUNDLE="${BUILD_CA_BUNDLE:-$REPO/\(.*\)}"$|\1|p' "$source_root/scripts/stack.sh")"
+check "paquet CA par défaut : chemin lu dans le lanceur" test -n "$default_ca"
+check "paquet CA par défaut : suivi par git" git -C "$source_root" ls-files --error-unmatch -- "$default_ca"
+check "paquet CA par défaut : vide" test ! -s "$source_root/$default_ca"
+check "paquet CA par défaut : même chemin dans Compose" grep -qF "\${BUILD_CA_BUNDLE:-./$default_ca}" "$source_root/docker-compose.yml"
 
 printf '\n%s réussis, %s en échec\n' "$passes" "$failures"
 test "$failures" -eq 0

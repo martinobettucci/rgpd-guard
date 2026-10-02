@@ -41,4 +41,4 @@ services:
 
 secrets:
   ca:
-    file: ${BUILD_CA_BUNDLE:-./config/build/ca-empty.pem}
+    file: ${BUILD_CA_BUNDLE:-./config/ca/empty.pem}

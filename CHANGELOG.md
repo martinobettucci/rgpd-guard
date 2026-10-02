@@ -32,6 +32,7 @@ Toutes les évolutions notables de RGPD Guard sont consignées ici.
 
 - Numéro de version précédé de `version:` pris pour une adresse IP publique.
 - Rechargement à chaud du moteur dev qui scrutait l'environnement virtuel monté et occupait un cœur en continu.
+- Construction impossible depuis un clone neuf : le paquet CA vide utilisé par défaut était exclu par le `.gitignore` ; il est désormais suivi sous `config/ca/empty.pem`.
 - Tableau de bord : liste des types détectés décalée, barre de navigation mobile incomplète, en-tête mobile empilé, faux espace avant la ponctuation dans le texte annoté.
 
 ## [Publié]
