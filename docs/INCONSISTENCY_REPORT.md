@@ -4,11 +4,6 @@ Défauts constatés hors de l'unité en cours, à résoudre par la boucle dédi�
 
 Origine : audit en lecture seule de la v0.1.0 avant la campagne de clôture, constats revérifiés à la main.
 
-## IR-17 Version 0.1.0 absente du CHANGELOG et de la marketplace
-
-- Constat : les manifestes portent tous 0.1.0, le CHANGELOG n'a pas d'entrée 0.1.0 et l'entrée du plugin dans `.claude-plugin/marketplace.json` n'a pas de version.
-- Concerne : RG-001, CHANGELOG.
-
 ## IR-18 Cache des modèles illisible en partie par le moteur
 
 - Constat : à chaque démarrage et à chaque banc, le moteur journalise « Ignoring corrupted tree cache file … [Errno 13] Permission denied » pour Laya, GLiNER et l'encodeur de GLiNER (12 lignes au démarrage de la pile dev).
