@@ -35,6 +35,7 @@ Toutes les évolutions notables de RGPD Guard sont consignées ici.
 
 - Numéro de version précédé de `version:` pris pour une adresse IP publique.
 - Rechargement à chaud du moteur dev qui scrutait l'environnement virtuel monté et occupait un cœur en continu.
+- THIRD_PARTY_NOTICES.md : bibliothèques livrées par le tableau de bord, outils de construction et images de base recensés.
 - Accueil du tableau de bord et commande `/rgpd-guard:dashboard` : même indication pour obtenir le jeton (`./runProd.sh token`, ou le lanceur de l'environnement démarré).
 - SCHEMA.md aligné sur la migration (colonnes `id`, aucun événement `analyze`) et protégé par un test qui compare tables et colonnes documentées à la base migrée.
 - DAT : la règle des délais emboîtés vaut pour les hooks qui analysent un texte ; un test du client la vérifie à partir de `hooks.json`.

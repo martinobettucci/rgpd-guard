@@ -30,6 +30,29 @@ RGPD Guard est distribué sous licence MIT. Il s'appuie sur les composants tiers
 | protobuf | BSD-3-Clause |
 | Faker (données de développement uniquement) | MIT |
 
+## Tableau de bord
+
+Bibliothèques livrées dans l'image du tableau de bord (versions de `dashboard/package-lock.json`) :
+
+| Bibliothèque | Licence |
+|---|---|
+| react, react-dom | MIT |
+| react-router-dom | MIT |
+| lucide-react (icônes) | ISC |
+
+Outils de construction et de test, non livrés : Vite, @vitejs/plugin-react, Vitest, jsdom, Testing Library, types Node et React (MIT), TypeScript et Playwright (Apache-2.0).
+
+## Images de base
+
+| Image | Usage | Licence du logiciel principal |
+|---|---|---|
+| `python:3.12-slim` | moteur (toutes cibles) | Python Software Foundation License |
+| `nginxinc/nginx-unprivileged:1.29-alpine` | tableau de bord en staging et en production | nginx : BSD-2-Clause |
+| `node:22-alpine` | construction du tableau de bord et serveur Vite de développement | Node.js : MIT |
+| `mcr.microsoft.com/playwright` | parcours E2E de développement uniquement | Playwright : Apache-2.0 |
+
+Chaque image embarque en outre les paquets de sa distribution (Debian ou Alpine), sous leurs licences respectives.
+
 ## Règles de détection
 
 Les motifs de secrets à préfixe connu s'inspirent des règles publiques de [gitleaks](https://github.com/gitleaks/gitleaks) (MIT). Aucune règle de trufflehog (AGPL-3.0) n'est reprise.
