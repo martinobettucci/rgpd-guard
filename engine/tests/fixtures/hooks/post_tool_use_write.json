@@ -1,0 +1,37 @@
+{
+  "session_id": "00000000-0000-4000-8000-000000000001",
+  "cwd": "/projet",
+  "prompt_id": "00000000-0000-4000-8000-0000000000aa",
+  "permission_mode": "bypassPermissions",
+  "effort": {
+    "level": "medium"
+  },
+  "hook_event_name": "PostToolUse",
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "/projet/write.txt",
+    "content": "Nom: Jeanne CANARI-PERSONNE\nEmail: canari.unique@example.org\nAjout: ok\n"
+  },
+  "tool_response": {
+    "type": "update",
+    "filePath": "/projet/write.txt",
+    "content": "Nom: Jeanne CANARI-PERSONNE\nEmail: canari.unique@example.org\nAjout: ok\n",
+    "structuredPatch": [
+      {
+        "oldStart": 1,
+        "oldLines": 2,
+        "newStart": 1,
+        "newLines": 3,
+        "lines": [
+          " Nom: Jeanne CANARI-PERSONNE",
+          " Email: canari.unique@example.org",
+          "+Ajout: ok"
+        ]
+      }
+    ],
+    "originalFile": "Nom: Jeanne CANARI-PERSONNE\nEmail: canari.unique@example.org\n",
+    "userModified": false
+  },
+  "tool_use_id": "toolu_mock_0004",
+  "duration_ms": 5
+}

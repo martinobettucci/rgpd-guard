@@ -47,18 +47,24 @@ flowchart LR
 <a id="flux-hooks"></a>
 ## 3. Contrat Claude Code
 
-Les faits suivants proviennent de la documentation officielle des hooks et des formes réelles relevées dans les transcripts locaux ; ils sont confirmés par la capture M1 consignée dans le journal.
+Les faits suivants proviennent de la documentation officielle des hooks et de la capture réelle M1 (Claude Code 2.1.287, faux serveur API) consignée dans le [journal](JOURNAL.md). Les payloads réels nettoyés servent de fixtures : `engine/tests/fixtures/hooks/`.
 
 | Événement | Ce que le moteur peut faire | Utilisation |
 |---|---|---|
 | `SessionStart` | ajouter du contexte, message système | consigne de conservation des jetons, état du moteur |
 | `UserPromptSubmit` | bloquer (`decision: block`), masquer le prompt dans le message (`suppressOriginalPrompt`), ajouter du contexte ; ne peut pas réécrire le prompt | blocage et proposition pseudonymisée |
-| `UserPromptExpansion` | bloquer l'expansion d'une commande slash | même traitement que le prompt |
-| `PreToolUse` | `permissionDecision` allow, deny, ask ; `updatedInput` | fichiers secrets, réhydratation, refus si moteur absent |
+| `PreToolUse` | `permissionDecision` allow, deny, ask ; `updatedInput` (seul, il laisse s'appliquer les règles de permission normales à l'entrée modifiée) ; s'exécute après la validation propre de l'outil | fichiers secrets, réhydratation, refus si moteur absent |
 | `PostToolUse` | `updatedToolOutput` remplace ce que Claude voit, à condition de respecter la forme exacte de la sortie de l'outil | pseudonymisation des sorties |
-| `PostToolUseFailure` | ajouter du contexte seulement | journalisation de fuite probable |
-| `PostToolBatch` | voit le contenu sérialisé exact envoyé au modèle ; `decision: block` arrête la boucle avant l'appel | filet de sécurité |
-| `SubagentStart` | ajouter du contexte au sous-agent | consigne de conservation des jetons |
+| `PostToolUseFailure` | ajouter du contexte seulement ; `error` contient « Exit code N » suivi de la sortie | journalisation de fuite probable, consigne d'édition |
+| `PostToolBatch` | voit le contenu sérialisé exact envoyé au modèle, sorties en échec comprises ; `decision: block` arrête la boucle avant l'appel (aucune requête émise) | filet de sécurité |
+| `SubagentStart` | ajouter du contexte au sous-agent (les hooks d'outils des sous-agents portent le même `session_id` et un `agent_id`) | consigne de conservation des jetons |
+
+Points mesurés qui structurent le design :
+- le contenu d'un fichier mentionné par `@chemin` est injecté dans la requête sans aucun hook d'outil ; seul `UserPromptSubmit` voit la mention ;
+- `UserPromptSubmit` reçoit le texte brut des commandes slash, arguments compris : `UserPromptExpansion` n'est pas utilisé ;
+- la validation d'Edit (`old_string` présent dans le fichier) précède `PreToolUse` : un `old_string` contenant un jeton échoue avant toute réhydratation ;
+- Write, Edit, MultiEdit et NotebookEdit ne renvoient au modèle qu'un message de succès fixe ;
+- cette version n'expose pas d'outils Grep ni Glob.
 
 Délais : 30 s par défaut sur `UserPromptSubmit` ; un hook qui dépasse son délai est ignoré et le prompt part. Les délais sont donc emboîtés : délai du hook, puis `curl --max-time` plus court, puis échéance interne du moteur plus courte encore, au-delà de laquelle seul le profil `rapide` s'applique.
 
@@ -91,16 +97,21 @@ sequenceDiagram
 
 Contournement : un prompt qui commence par `#rgpd-ok` passe, sauf s'il contient un secret ; le contournement est journalisé.
 
+Mentions `@chemin` : le moteur résout chaque mention par rapport au `cwd` du payload (suffixes `#L10-20` et guillemets acceptés). Le dossier racine de travail (`RGPD_GUARD_WORKSPACE_ROOT`, défaut : dossier personnel) est monté en lecture seule au même chemin dans le conteneur. Un fichier mentionné qui contient une donnée bloquante bloque le prompt ; un fichier existant mais hors de portée du montage bloque aussi, avec la consigne de demander une lecture par l'outil Read (qui passe par `PostToolUse`). Une mention qui ne désigne aucun fichier (adresse email, pseudo) est ignorée.
+
 ### 4.2 Sorties d'outils
 
 1. `PreToolUse` : refus des fichiers secrets ; refus de tout outil si le moteur est absent et `fail_mode=closed`.
 2. L'outil s'exécute localement.
-3. `PostToolUse` : le moteur parcourt `tool_response`, remplace chaque feuille texte (hors clés techniques : chemins, types, identifiants, compteurs) par sa version pseudonymisée et renvoie la structure complète dans `updatedToolOutput`.
+3. `PostToolUse` : le moteur parcourt `tool_response`, remplace chaque feuille texte (hors clés techniques : chemins, types, identifiants, compteurs) par sa version pseudonymisée et renvoie la structure complète dans `updatedToolOutput`. Les outils d'écriture sont ignorés (message de succès fixe côté modèle).
+   `PostToolUseFailure` : l'événement est journalisé comme fuite probable si `error` contient une donnée ; si l'échec est un Edit dont l'`old_string` contient un jeton, la consigne d'édition est rappelée à Claude.
 4. `PostToolBatch` : le moteur recontrôle le contenu sérialisé final avec le profil `rapide` ; une donnée résiduelle bloque la boucle avant l'appel au modèle, avec la consigne d'utiliser `/rewind`.
 
 ### 4.3 Réhydratation
 
-Lorsque Claude écrit (`Write`, `Edit`, `MultiEdit`, `NotebookEdit`) ou désigne un chemin (`Read`, `Grep`, `Glob`) avec des jetons `⟦TYPE_N⟧`, `PreToolUse` les remplace par les valeurs d'origine exactes via `updatedInput`. La décision est `allow` en mode `bypassPermissions` ou `acceptEdits`, `ask` sinon, afin de ne jamais accorder une permission que l'utilisateur n'aurait pas donnée. Un jeton inconnu (coffre expiré, moteur redémarré) entraîne un refus : aucun jeton n'est jamais écrit sur disque. Bash, WebFetch, WebSearch et MCP ne sont jamais réhydratés, car ce serait une voie d'exfiltration. La sortie de l'outil d'écriture, qui contient alors les vraies valeurs, repasse par `PostToolUse`.
+Lorsque Claude écrit (`Write` : `content` ; `Edit` : `new_string` ; `MultiEdit` : `edits[].new_string` ; `NotebookEdit` : `new_source`) ou désigne un chemin (`Read`, `Grep`, `Glob` : chemins et motifs) avec des jetons `⟦TYPE_N⟧`, `PreToolUse` les remplace par les valeurs d'origine exactes et renvoie `updatedInput` **sans** `permissionDecision` : les règles de permission normales s'appliquent à l'entrée réhydratée, le plugin n'accorde ni ne retire aucune permission. Un jeton inconnu (coffre expiré, moteur redémarré) entraîne un refus : aucun jeton n'est jamais écrit sur disque. Bash, WebFetch, WebSearch et MCP ne sont jamais réhydratés, car ce serait une voie d'exfiltration.
+
+La validation d'Edit précédant les hooks, la consigne injectée à Claude (SessionStart, SubagentStart) demande de choisir un `old_string` sans jeton, ou de réécrire le fichier avec Write.
 
 <a id="client-hook"></a>
 ## 5. Client de hook `guard-hook.sh`
@@ -114,7 +125,7 @@ Lorsque Claude écrit (`Write`, `Edit`, `MultiEdit`, `NotebookEdit`) ou désigne
 
 | Événement | `closed` (défaut) | `open` |
 |---|---|---|
-| UserPromptSubmit, UserPromptExpansion | blocage avec consigne de démarrage | message système d'avertissement |
+| UserPromptSubmit | blocage avec consigne de démarrage | message système d'avertissement |
 | PreToolUse | refus de l'outil | message système |
 | PostToolBatch | blocage de la boucle | message système |
 | PostToolUse, PostToolUseFailure, SessionStart, SubagentStart | message système | message système |
@@ -227,7 +238,7 @@ Reprise : la base SQLite vit dans un volume nommé ; sa perte n'efface que le jo
 - Détection locale sur CPU uniquement : aucun appel réseau à l'exécution, modèles intégrés à l'image.
 - spaCy français sous licence LGPL-LR : modèle téléchargé à la construction de l'image, jamais versionné dans le dépôt.
 - Laya ne localise pas les spans : il qualifie le caractère sensible du texte, les spans sont pseudonymisés par les autres détecteurs.
-- Limites connues : images collées, contenus injectés sans hook, télémétrie de Claude Code (désactivable par `DISABLE_TELEMETRY=1`), contenu analysé côté serveur par WebFetch, sortie d'une commande en échec visible par le seul filet `PostToolBatch`, transcript local qui conserve le texte d'un prompt bloqué.
+- Limites connues : images collées ; contenus injectés sans hook (CLAUDE.md, mémoire, état git, sortie des commandes `!` d'une commande slash) ; télémétrie de Claude Code (désactivable par `DISABLE_TELEMETRY=1`) ; contenu analysé côté serveur par WebFetch ; sortie d'une commande en échec arrêtée par le seul filet `PostToolBatch`, qui laisse le résultat dans la conversation (consigne `/rewind`) ; transcript local qui conserve le texte d'un prompt bloqué ; Edit dont l'`old_string` contient un jeton refusé par Claude Code avant tout hook.
 
 <a id="dependances"></a>
 ## 14. Dépendances structurantes

@@ -1,0 +1,8 @@
+{
+  "session_id": "00000000-0000-4000-8000-000000000001",
+  "cwd": "/projet",
+  "prompt_id": "00000000-0000-4000-8000-0000000000aa",
+  "agent_id": "a38a19f93df99eac6",
+  "agent_type": "general-purpose",
+  "hook_event_name": "SubagentStart"
+}

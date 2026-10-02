@@ -57,3 +57,40 @@ Empêcher l'envoi de données personnelles et de secrets à un moteur d'IA depui
 
 - Le découpage en unités est persisté dans [BACKLOG.md](BACKLOG.md), l'architecture dans [DAT.md](DAT.md).
 - Première étape technique : capture réelle des formes de hooks (M1) avant d'écrire les adaptateurs.
+
+## 2026-10-02 : capture réelle du contrat des hooks (M1)
+
+### Problème
+
+Les adaptateurs du moteur dépendent de formes et de comportements que la documentation ne détaille pas toujours. Les écrire sans les observer reviendrait à coder sur des hypothèses.
+
+### Méthode
+
+Faux serveur de l'API Messages (`e2e/claude/mock_anthropic.py`) rejouant des scénarios d'appels d'outils et enregistrant chaque requête ; plugin de capture enregistrant chaque payload de hook et renvoyant des réponses préparées par outil ; Claude Code 2.1.287 en mode `-p`, dans un environnement isolé (`env -i`, `HOME` temporaire, clé factice). Données 100 % synthétiques, avec valeurs canari. Payloads nettoyés conservés dans `engine/tests/fixtures/hooks/`.
+
+### Observations (mesurées)
+
+| Cas | Résultat |
+|---|---|
+| Read + `updatedToolOutput` de même forme | le modèle ne reçoit que les jetons, aucune valeur canari dans les requêtes ; `PostToolBatch` voit la version remplacée |
+| Bash réussi | `tool_response` = `{stdout, stderr, interrupted, isImage, noOutputExpected}` |
+| Bash en échec (code 3) | `PostToolUseFailure` avec `error` = « Exit code 3 » suivi de la sortie complète ; `PostToolBatch` contient ce texte |
+| `PostToolBatch` avec `decision: block` | aucune requête n'est envoyée après l'outil : la sortie en échec n'atteint pas le modèle |
+| Edit avec un `old_string` contenant un jeton | refusé par la validation de l'outil (« String to replace not found ») **avant** le hook `PreToolUse` : impossible à réhydrater |
+| Edit avec `old_string` sans jeton, `new_string` réhydraté par `updatedInput` | fichier écrit avec les vraies valeurs ; le modèle ne reçoit qu'un message de succès fixe |
+| Write réhydraté par `updatedInput` | fichier écrit avec les vraies valeurs ; message de succès fixe |
+| `updatedInput` **sans** `permissionDecision` | l'entrée modifiée est utilisée et les règles de permission normales sont évaluées sur elle (commande non autorisée refusée en mode `default`) |
+| Mention `@data.txt` dans le prompt | contenu du fichier injecté directement dans la requête, **aucun hook d'outil** ; seul `UserPromptSubmit` voit le texte `@data.txt` |
+| Sous-agent | hooks d'outils déclenchés avec le même `session_id` et un `agent_id` ; outil nommé `Agent` ; `SubagentStart` disponible |
+| Prompt bloqué | aucune requête vers l'API ; résultat « UserPromptSubmit operation blocked by hook » suivi du motif |
+| Commande slash avec arguments | `UserPromptExpansion` puis `UserPromptSubmit`, ce dernier reçoit le texte brut complet avec les arguments |
+| Outils exposés | pas d'outils Grep ni Glob dans cette version (recherche via Bash) |
+
+### Décisions
+
+1. **Réhydratation par `updatedInput` seul, sans `permissionDecision`.** Motif : la permission normale s'applique à l'entrée réhydratée ; le plugin n'accorde ni ne retire jamais de permission. Remplace la règle `allow`/`ask` du cadrage.
+2. **Consigne d'édition injectée à Claude** (SessionStart, SubagentStart) : pour modifier un passage, choisir un `old_string` sans jeton `⟦...⟧`, ou réécrire le fichier avec Write. En cas d'échec d'un Edit dont l'`old_string` contient un jeton, `PostToolUseFailure` rappelle cette consigne. Motif : la validation d'Edit précède les hooks.
+3. **Mentions `@fichier` résolues par le moteur.** Le dossier racine de travail (`RGPD_GUARD_WORKSPACE_ROOT`, défaut : dossier personnel) est monté en lecture seule au même chemin dans le conteneur ; le moteur analyse les fichiers mentionnés et bloque le prompt s'ils contiennent une donnée bloquante. Une mention qui désigne un fichier existant hors de portée est bloquée avec la consigne de demander une lecture par l'outil Read. Écarté : blocage systématique de toute mention (coût d'usage élevé pour du code ordinaire).
+4. **Pas de hook `UserPromptExpansion`.** Motif : `UserPromptSubmit` voit déjà le texte brut avec les arguments ; un seul chemin de contrôle. Limite : la sortie des commandes `!` exécutées dans le corps d'une commande slash n'est vue par aucun hook.
+5. **Pas de pseudonymisation des sorties de Write, Edit, MultiEdit et NotebookEdit dans `PostToolUse`.** Motif : le modèle ne reçoit qu'un message de succès fixe ; `PostToolBatch` reste le juge final si une version future y ajoutait du contenu.
+6. **Sorties de commandes en échec** : pas d'enveloppe de commande (elle modifierait l'évaluation des règles de permission) ; le filet `PostToolBatch` bloque avant l'envoi, avec la consigne `/rewind`. Amélioration possible inscrite au backlog (RG-021).

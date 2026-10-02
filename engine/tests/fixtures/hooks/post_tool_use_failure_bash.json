@@ -1,0 +1,19 @@
+{
+  "session_id": "00000000-0000-4000-8000-000000000001",
+  "cwd": "/projet",
+  "prompt_id": "00000000-0000-4000-8000-0000000000aa",
+  "permission_mode": "bypassPermissions",
+  "effort": {
+    "level": "medium"
+  },
+  "hook_event_name": "PostToolUseFailure",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "cat /projet/data.txt; exit 3",
+    "description": "echec"
+  },
+  "tool_use_id": "toolu_mock_0002",
+  "error": "Exit code 3\nNom: Jeanne CANARI-PERSONNE\nEmail: canari.unique@example.org\nIBAN: FR7630006000011234567890189",
+  "is_interrupt": false,
+  "duration_ms": 19
+}

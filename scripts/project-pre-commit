@@ -86,7 +86,7 @@ for path in ${shell_files[@]+"${shell_files[@]}"}; do
   fi
 done
 
-if [[ "${#python_files[@]}" -gt 0 && -d engine ]]; then
+if [[ "${#python_files[@]}" -gt 0 ]]; then
   ruff_bin=""
   if [[ -x engine/.venv/bin/ruff ]]; then
     ruff_bin="engine/.venv/bin/ruff"
@@ -94,7 +94,11 @@ if [[ "${#python_files[@]}" -gt 0 && -d engine ]]; then
     ruff_bin="ruff"
   fi
   if [[ -n "$ruff_bin" ]]; then
-    if ! "$ruff_bin" check --quiet --config engine/pyproject.toml ${python_files[@]+"${python_files[@]}"}; then
+    ruff_args=(check --quiet)
+    if [[ -f engine/pyproject.toml ]]; then
+      ruff_args+=(--config engine/pyproject.toml)
+    fi
+    if ! "$ruff_bin" "${ruff_args[@]}" ${python_files[@]+"${python_files[@]}"}; then
       report "ruff signale des erreurs"
     fi
   else

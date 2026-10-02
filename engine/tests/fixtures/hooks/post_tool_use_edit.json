@@ -1,0 +1,41 @@
+{
+  "session_id": "00000000-0000-4000-8000-000000000001",
+  "cwd": "/projet",
+  "prompt_id": "00000000-0000-4000-8000-0000000000aa",
+  "permission_mode": "bypassPermissions",
+  "effort": {
+    "level": "medium"
+  },
+  "hook_event_name": "PostToolUse",
+  "tool_name": "Edit",
+  "tool_input": {
+    "file_path": "/projet/edit2.txt",
+    "old_string": "IBAN:",
+    "new_string": "Contact: canari.unique@example.org\nIBAN:",
+    "replace_all": false
+  },
+  "tool_response": {
+    "filePath": "/projet/edit2.txt",
+    "oldString": "IBAN:",
+    "newString": "Contact: canari.unique@example.org\nIBAN:",
+    "originalFile": "Nom: Jeanne CANARI-PERSONNE\nEmail: canari.unique@example.org\nIBAN: FR7630006000011234567890189\n",
+    "structuredPatch": [
+      {
+        "oldStart": 1,
+        "oldLines": 3,
+        "newStart": 1,
+        "newLines": 4,
+        "lines": [
+          " Nom: Jeanne CANARI-PERSONNE",
+          " Email: canari.unique@example.org",
+          "+Contact: canari.unique@example.org",
+          " IBAN: FR7630006000011234567890189"
+        ]
+      }
+    ],
+    "userModified": false,
+    "replaceAll": false
+  },
+  "tool_use_id": "toolu_mock_0003",
+  "duration_ms": 8
+}

@@ -1,0 +1,20 @@
+{
+  "session_id": "00000000-0000-4000-8000-000000000001",
+  "cwd": "/projet",
+  "prompt_id": "00000000-0000-4000-8000-0000000000aa",
+  "permission_mode": "bypassPermissions",
+  "effort": {
+    "level": "medium"
+  },
+  "hook_event_name": "PostToolBatch",
+  "tool_calls": [
+    {
+      "tool_name": "Read",
+      "tool_input": {
+        "file_path": "/projet/data.txt"
+      },
+      "tool_use_id": "toolu_mock_0001",
+      "tool_response": "1\tNom: Jeanne CANARI-PERSONNE\n2\tEmail: canari.unique@example.org\n3\tIBAN: FR7630006000011234567890189\n4\t"
+    }
+  ]
+}

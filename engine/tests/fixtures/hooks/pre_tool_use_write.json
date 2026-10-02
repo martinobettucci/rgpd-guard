@@ -1,0 +1,16 @@
+{
+  "session_id": "00000000-0000-4000-8000-000000000001",
+  "cwd": "/projet",
+  "prompt_id": "00000000-0000-4000-8000-0000000000aa",
+  "permission_mode": "bypassPermissions",
+  "effort": {
+    "level": "medium"
+  },
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "/projet/write.txt",
+    "content": "Nom: ⟦PERSONNE_1⟧\nEmail: ⟦EMAIL_1⟧\nAjout: ok\n"
+  },
+  "tool_use_id": "toolu_mock_0004"
+}

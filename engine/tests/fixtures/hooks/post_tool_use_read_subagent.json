@@ -1,0 +1,28 @@
+{
+  "session_id": "00000000-0000-4000-8000-000000000001",
+  "cwd": "/projet",
+  "prompt_id": "00000000-0000-4000-8000-0000000000aa",
+  "permission_mode": "bypassPermissions",
+  "agent_id": "a38a19f93df99eac6",
+  "agent_type": "general-purpose",
+  "effort": {
+    "level": "medium"
+  },
+  "hook_event_name": "PostToolUse",
+  "tool_name": "Read",
+  "tool_input": {
+    "file_path": "/projet/data.txt"
+  },
+  "tool_response": {
+    "type": "text",
+    "file": {
+      "filePath": "/projet/data.txt",
+      "content": "Nom: Jeanne CANARI-PERSONNE\nEmail: canari.unique@example.org\nIBAN: FR7630006000011234567890189\n",
+      "numLines": 4,
+      "startLine": 1,
+      "totalLines": 4
+    }
+  },
+  "tool_use_id": "toolu_mock_0002",
+  "duration_ms": 23
+}

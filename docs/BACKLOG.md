@@ -29,7 +29,7 @@ Objectif : distribuer le plugin `rgpd-guard` par une marketplace hébergée dans
 
 Critères d'acceptation :
 - `.claude-plugin/marketplace.json` à la racine et `plugins/rgpd-guard/.claude-plugin/plugin.json` valides (`claude plugin validate`) ;
-- hooks déclarés : SessionStart, UserPromptSubmit, UserPromptExpansion, PreToolUse, PostToolUse, PostToolUseFailure, PostToolBatch, SubagentStart ([DAT §4](DAT.md#flux-hooks)) ;
+- hooks déclarés : SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, PostToolUseFailure, PostToolBatch, SubagentStart ([DAT §3](DAT.md#flux-hooks)) ;
 - client `scripts/guard-hook.sh` POSIX `sh` + `curl`, sans dépendance, jeton jamais passé en argument de commande, `--noproxy '*'` ;
 - moteur injoignable, en erreur ou trop lent : blocage des prompts et refus des outils lorsque `fail_mode=closed` (défaut), avertissement seul lorsque `fail_mode=open` ;
 - options utilisateur : `engine_url`, `engine_token` (sensible), `fail_mode`, `profile`.
@@ -81,8 +81,8 @@ Critères d'acceptation :
 - `decision: block`, motif en français listant les types détectés avec aperçu masqué, prompt pseudonymisé complet, `suppressOriginalPrompt: true` ;
 - préfixe de contournement `#rgpd-ok` : laisse passer le prompt, journalise le contournement, ne s'applique jamais aux secrets ;
 - détections de niveau `warn` : prompt transmis, message système affiché à l'utilisateur ;
-- mentions `@fichier` : traitement conforme au constat de la capture M1 consigné dans le JOURNAL ;
-- UserPromptExpansion traité comme un prompt.
+- mentions `@fichier` : fichiers résolus via le montage en lecture seule, analysés, prompt bloqué si donnée bloquante ou fichier hors de portée ([DAT §4.1](DAT.md#flux)) ;
+- commandes slash : arguments contrôlés via le texte brut reçu par UserPromptSubmit.
 
 Tests : unitaires de l'adaptateur ; E2E Claude Code réel : le faux serveur API ne reçoit jamais la valeur canari.
 
@@ -92,11 +92,11 @@ Tests : unitaires de l'adaptateur ; E2E Claude Code réel : le faux serveur API 
 Objectif : empêcher qu'une sortie d'outil (fichier lu, commande, recherche, MCP) transmette une donnée sensible, sans casser l'édition des fichiers.
 
 Critères d'acceptation :
-- PostToolUse : parcours générique de `tool_response`, remplacement des seules feuilles texte, forme strictement conservée, `updatedToolOutput` et note de comptage pour Claude ;
+- PostToolUse : parcours générique de `tool_response`, remplacement des seules feuilles texte, forme strictement conservée, `updatedToolOutput` et note de comptage pour Claude ; outils d'écriture ignorés ;
 - PostToolBatch : nouveau contrôle (profil `rapide`) du contenu sérialisé final ; donnée résiduelle : `decision: block` avec consigne de retour arrière ;
-- PostToolUseFailure : événement journalisé comme fuite probable lorsque l'erreur contient une donnée ;
-- PreToolUse : refus des fichiers secrets (`.env*`, `*.pem`, `*.key`, `id_rsa*`, `*.kdbx`...) ; réhydratation des jetons pour Write, Edit, MultiEdit, NotebookEdit et les chemins de Read, Grep, Glob ; jamais pour Bash, WebFetch, WebSearch ni MCP ; jeton inconnu : refus ; décision `allow` seulement en mode `bypassPermissions` ou `acceptEdits`, `ask` sinon ;
-- SessionStart et SubagentStart : consigne de conservation des jetons injectée dans le contexte.
+- PostToolUseFailure : événement journalisé comme fuite probable lorsque l'erreur contient une donnée ; consigne d'édition rappelée après un Edit refusé dont l'`old_string` contient un jeton ;
+- PreToolUse : refus des fichiers secrets (`.env*`, `*.pem`, `*.key`, `id_rsa*`, `*.kdbx`...) ; réhydratation des jetons pour Write, Edit, MultiEdit, NotebookEdit et les chemins de Read, Grep, Glob, par `updatedInput` seul (permissions normales préservées) ; jamais pour Bash, WebFetch, WebSearch ni MCP ; jeton inconnu : refus ;
+- SessionStart et SubagentStart : consigne de conservation des jetons et consigne d'édition injectées dans le contexte.
 
 Tests : unitaires du parcours de forme et de la réhydratation ; E2E Claude Code réel : Read pseudonymisé, Edit réhydraté sur disque, canari jamais transmis.
 
@@ -207,3 +207,8 @@ Comparer `fastino/gliner2-privacy-filter-PII-multi` et `OpenMed/privacy-filter-m
 ### [ ] RG-020 Affichage local des valeurs réelles
 
 Étudier le hook `MessageDisplay` pour réafficher localement les valeurs réelles à la place des jetons, sans les transmettre au modèle.
+
+<a id="RG-021"></a>
+### [ ] RG-021 Sorties de commandes en échec
+
+Aujourd'hui, une commande en échec dont la sortie contient une donnée est arrêtée par le filet `PostToolBatch`, ce qui laisse le résultat dans la conversation. Étudier une enveloppe de commande qui ne change pas l'évaluation des règles de permission, afin que `PostToolUse` puisse pseudonymiser ces sorties.
