@@ -60,7 +60,8 @@ class Allowlist(BaseModel):
             try:
                 re.compile(pattern)
             except re.error as exc:
-                raise ValueError(f"expression régulière invalide « {pattern} » : {exc}") from exc
+                where = f" (erreur à la position {exc.pos})" if exc.pos is not None else ""
+                raise ValueError(f"expression régulière invalide « {pattern} »{where}") from exc
         return patterns
 
 

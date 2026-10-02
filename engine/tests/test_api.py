@@ -85,7 +85,17 @@ def test_policy_update_validated_server_side(logged_client: TestClient) -> None:
     assert body["decision"] == "warn"
     policy["labels"]["IBAN"]["prompt"] = "interdit"
     invalid = logged_client.put("/v1/policies", json=policy)
-    assert invalid.status_code == 422 and invalid.json()["erreurs"]
+    assert invalid.status_code == 422
+    assert invalid.json()["erreurs"][0]["message"].startswith("valeur non autorisée (attendu : ")
+    policy["labels"]["IBAN"]["prompt"] = "warn"
+    policy["allowlist"]["patterns"] = ["(non fermée"]
+    bad_regex = logged_client.put("/v1/policies", json=policy).json()["erreurs"]
+    assert bad_regex == [
+        {
+            "champ": "allowlist.patterns",
+            "message": "expression régulière invalide « (non fermée » (erreur à la position 0)",
+        }
+    ]
     reset = logged_client.post("/v1/policies/reset").json()
     assert reset["source"] == "default" and reset["policy"]["labels"]["IBAN"]["prompt"] == "block"
 
@@ -102,6 +112,8 @@ def test_engines_status(logged_client: TestClient) -> None:
     body = logged_client.get("/v1/engines").json()
     names = {c["name"] for c in body["components"]}
     assert {"rules", "secrets"} <= names and body["profiles"]["rapide"]["missing"] == []
+    assert body["profiles"]["equilibre"]["classifiers_prompt"] == ["laya"]
+    assert body["labels"]["IBAN"] == "IBAN" and body["categories"]["SANTE"] == "santé"
 
 
 def test_scan_returns_counts_only(client: TestClient, auth_headers: dict[str, str], settings) -> None:  # type: ignore[no-untyped-def]

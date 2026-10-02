@@ -10,7 +10,8 @@ from dataclasses import dataclass, field
 from .detectors.base import Classifier, Detector
 from .models import Analysis, CategoryScore, Context, DetectionContext, Span
 from .policy import PolicyEngine
-from .textutil import code_block_ranges, guess_language, overlaps, token_ranges
+from .taxonomy import CLASSIFIER_PLACEHOLDERS
+from .textutil import code_block_ranges, guess_language, mask_for_classifier, overlaps, token_ranges
 
 log = logging.getLogger(__name__)
 
@@ -135,21 +136,27 @@ class Pipeline:
                     continue
                 spans.append(span)
 
+        kept = resolve_overlaps(spans)
         categories: list[CategoryScore] = []
         wanted = profile.classifiers_prompt if context is Context.PROMPT else profile.classifiers_output
+        masked = (
+            mask_for_classifier(text, [(s.start, s.end, CLASSIFIER_PLACEHOLDERS.get(s.label)) for s in kept])
+            if wanted
+            else text
+        )
         for name in wanted:
             classifier = self.registry.classifiers.get(name)
             if classifier is None or not models_allowed:
                 continue
             t0 = time.perf_counter()
             try:
-                categories += classifier.classify(text, ctx)
+                categories += classifier.classify(masked, ctx)
             except Exception:
                 log.exception("classificateur %s en erreur", name)
                 analysis.partial = True
                 continue
             analysis.timings_ms[name] = round((time.perf_counter() - t0) * 1000, 2)
 
-        self.policy.apply(analysis, resolve_overlaps(spans), categories, context)
+        self.policy.apply(analysis, kept, categories, context)
         analysis.timings_ms["total"] = round((time.perf_counter() - started) * 1000, 2)
         return analysis

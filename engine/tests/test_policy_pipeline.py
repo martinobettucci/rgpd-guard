@@ -14,6 +14,7 @@ from rgpd_guard.models import Action, CategoryScore, Context, DetectionContext, 
 from rgpd_guard.pipeline import Pipeline, Registry, resolve_overlaps
 from rgpd_guard.policy import Policy, PolicyEngine, load_policy_file
 from rgpd_guard.taxonomy import Category, Label
+from rgpd_guard.textutil import mask_for_classifier
 
 
 class FakeClassifier:
@@ -23,8 +24,10 @@ class FakeClassifier:
 
     def __init__(self, scores: dict[Category, float]) -> None:
         self.scores = scores
+        self.seen: list[str] = []
 
     def classify(self, text: str, ctx: DetectionContext) -> list[CategoryScore]:
+        self.seen.append(text)
         return [CategoryScore(c, p, self.name) for c, p in self.scores.items()]
 
 
@@ -95,3 +98,20 @@ def test_category_below_threshold_ignored() -> None:
 def test_missing_model_detectors_are_reported() -> None:
     registry = make_pipeline().registry
     assert registry.missing_for_name("max") == ["gliner", "laya", "spacy"]
+
+
+def test_mask_for_classifier_replaces_identifiers_and_tokens() -> None:
+    text = "Paul (p@courriel-fictif.fr) au CHU. Voir ⟦DATE_NAISSANCE_2⟧."
+    masked = mask_for_classifier(text, [(0, 4, "[personne]"), (6, 26, "[email]"), (31, 34, None)])
+    assert masked == "[personne] ([email]) au CHU. Voir [date naissance]."
+
+
+def test_classifier_receives_masked_text_and_spans_stay_raw() -> None:
+    pipeline = make_pipeline({Category.SANTE: 0.9})
+    classifier = pipeline.registry.classifiers["laya"]
+    assert isinstance(classifier, FakeClassifier)
+    iban = make_iban()
+    analysis = pipeline.analyze(f"Hospitalisé hier. Virement sur {iban} et contact ⟦EMAIL_1⟧.", "equilibre")
+    assert classifier.seen == ["Hospitalisé hier. Virement sur [IBAN] et contact [email]."]
+    assert any(f.span.label is Label.IBAN for f in analysis.findings)
+    assert [c.action for c in analysis.categories] == [Action.BLOCK]

@@ -73,6 +73,25 @@ def token_ranges(text: str) -> list[tuple[int, int]]:
     return [(m.start(), m.end()) for m in TOKEN_RE.finditer(text)]
 
 
+def mask_for_classifier(text: str, spans: list[tuple[int, int, str | None]]) -> str:
+    """Remplace les spans (triés, sans recouvrement) et les jetons existants par des marqueurs neutres.
+
+    `spans` donne pour chaque identifiant `(début, fin, marqueur)` ; un marqueur `None` laisse le texte
+    en clair. Un jeton `⟦TYPE_N⟧` devient `[type]`, pour qu'un prompt pseudonymisé recollé soit jugé
+    comme le texte d'origine.
+    """
+    parts: list[str] = []
+    cursor = 0
+    for start, end, marker in spans:
+        if marker is None or start < cursor:
+            continue
+        parts.append(text[cursor:start])
+        parts.append(marker)
+        cursor = end
+    parts.append(text[cursor:])
+    return TOKEN_RE.sub(lambda m: f"[{m.group(1).lower().replace('_', ' ')}]", "".join(parts))
+
+
 def code_block_ranges(text: str) -> list[tuple[int, int]]:
     """Positions des blocs de code délimités (``` ou ~~~) d'un texte Markdown."""
     ranges = []

@@ -88,3 +88,24 @@ DIRECT_IDENTIFIERS: frozenset[Label] = frozenset(
         Label.DATE_NAISSANCE,
     }
 )
+
+# Marqueurs neutres substitués aux identifiants structurés dans le texte soumis aux classificateurs de
+# catégories : les longues suites de chiffres, adresses email et jetons ⟦TYPE_N⟧ diluent ou détournent
+# le signal sémantique, alors qu'un marqueur garde la structure de la phrase. Restent en clair les noms
+# de personnes (langage naturel, leur masquage ajoutait des faux positifs sur le banc), les lieux et
+# les organisations (ils portent souvent la catégorie elle-même : hôpital, syndicat, parti).
+CLASSIFIER_PLACEHOLDERS: dict[Label, str] = {
+    Label.EMAIL: "[email]",
+    Label.TELEPHONE: "[téléphone]",
+    Label.ADRESSE: "[adresse]",
+    Label.IBAN: "[IBAN]",
+    Label.CARTE_BANCAIRE: "[carte bancaire]",
+    Label.NIR: "[numéro de sécurité sociale]",
+    Label.SIREN: "[SIREN]",
+    Label.SIRET: "[SIRET]",
+    Label.IP: "[adresse IP]",
+    Label.PLAQUE: "[plaque]",
+    Label.DATE_NAISSANCE: "[date de naissance]",
+    Label.URL_SENSIBLE: "[URL]",
+    Label.SECRET: "[secret]",
+}

@@ -59,10 +59,33 @@ class LoginRequest(BaseModel):
     token: str = Field(min_length=1, max_length=512)
 
 
+def _french_message(error: Any) -> str:
+    """Message français d'une erreur pydantic : celui du validateur métier, sinon une traduction par type."""
+    kind = str(error.get("type", ""))
+    ctx = error.get("ctx") or {}
+    if kind == "value_error" and "error" in ctx:
+        return str(ctx["error"])
+    if kind == "missing":
+        return "champ obligatoire"
+    if kind == "extra_forbidden":
+        return "champ inconnu"
+    if kind in ("enum", "literal_error"):
+        return f"valeur non autorisée (attendu : {ctx.get('expected', '?')})"
+    if kind == "string_too_long":
+        return f"texte trop long (maximum {ctx.get('max_length', '?')} caractères)"
+    if kind == "string_too_short":
+        return f"texte trop court (minimum {ctx.get('min_length', '?')} caractères)"
+    if kind in ("greater_than_equal", "greater_than"):
+        return f"valeur trop petite (minimum {ctx.get('ge', ctx.get('gt', '?'))})"
+    if kind in ("less_than_equal", "less_than"):
+        return f"valeur trop grande (maximum {ctx.get('le', ctx.get('lt', '?'))})"
+    if kind.endswith(("_type", "_parsing")):
+        return "type de valeur incorrect"
+    return "valeur invalide"
+
+
 def _french_errors(exc: ValidationError | RequestValidationError) -> list[dict[str, str]]:
-    return [
-        {"champ": ".".join(str(p) for p in e.get("loc", ())), "message": str(e.get("msg", ""))} for e in exc.errors()
-    ]
+    return [{"champ": ".".join(str(p) for p in e.get("loc", ())), "message": _french_message(e)} for e in exc.errors()]
 
 
 def create_app(settings: Settings | None = None, engine: Engine | None = None) -> FastAPI:
@@ -270,6 +293,8 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
             "components": eng.components(),
             "vault": eng.vault.stats(),
             "bench": bench,
+            "labels": {k.value: v for k, v in LABEL_NAMES.items()},
+            "categories": {k.value: v for k, v in CATEGORY_NAMES.items()},
         }
 
     return app
