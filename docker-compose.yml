@@ -1,0 +1,44 @@
+# @spec docs/BACKLOG.md#RG-018 | docs/DAT.md#deploiement
+# Base commune aux trois environnements ; chaque surcharge (dev, staging, prod) précise cible, ports et fichier d'environnement.
+# Les variables d'interpolation sont exportées par les lanceurs run*.sh.
+
+services:
+  engine:
+    build:
+      context: ./engine
+      network: ${BUILD_NETWORK:-default}
+      args:
+        HTTPS_PROXY: ${BUILD_HTTPS_PROXY:-}
+        https_proxy: ${BUILD_HTTPS_PROXY:-}
+      secrets:
+        - ca
+    environment:
+      RGPD_GUARD_WORKSPACE_ROOT: ${RGPD_GUARD_WORKSPACE_ROOT}
+    volumes:
+      - type: bind
+        source: ${RGPD_GUARD_WORKSPACE_ROOT}
+        target: ${RGPD_GUARD_WORKSPACE_ROOT}
+        read_only: true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8742/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      start_period: 240s
+      retries: 6
+
+  dashboard:
+    build:
+      context: ./dashboard
+      network: ${BUILD_NETWORK:-default}
+      args:
+        HTTPS_PROXY: ${BUILD_HTTPS_PROXY:-}
+        https_proxy: ${BUILD_HTTPS_PROXY:-}
+      secrets:
+        - ca
+    depends_on:
+      engine:
+        condition: service_started
+
+secrets:
+  ca:
+    file: ${BUILD_CA_BUNDLE:-./config/build/ca-empty.pem}

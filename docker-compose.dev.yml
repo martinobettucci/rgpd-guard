@@ -1,0 +1,68 @@
+# @spec docs/BACKLOG.md#RG-018 | docs/DAT.md#deploiement | docs/DAT.md#donnees-dev
+# Développement : code monté, rechargement à chaud, modèles du cache local, seed et E2E en conteneurs.
+
+services:
+  engine:
+    build:
+      target: dev
+    image: rgpd-guard-engine:dev
+    env_file: [config/environments/dev.env]
+    volumes:
+      - ./engine:/app
+      - ./seeds:/seeds
+      - ./models-cache:/models:ro
+      - engine-data:/data
+    ports:
+      - "127.0.0.1:${ENGINE_PORT:-8742}:8742"
+
+  dashboard:
+    build:
+      target: dev
+    image: rgpd-guard-dashboard:dev
+    environment:
+      RGPD_GUARD_ENGINE_URL: http://engine:8742
+    volumes:
+      - ./dashboard/src:/app/src
+      - ./dashboard/public:/app/public
+      - ./dashboard/index.html:/app/index.html
+    ports:
+      - "127.0.0.1:${DASHBOARD_PORT:-8743}:5173"
+
+  seeder:
+    profiles: ["outils"]
+    image: rgpd-guard-engine:dev
+    env_file: [config/environments/dev.env]
+    volumes:
+      - ./engine:/app
+      - ./seeds:/seeds
+    command: ["python", "/seeds/seed_events.py", "--engine", "http://engine:8742"]
+    depends_on:
+      engine:
+        condition: service_healthy
+
+  e2e:
+    profiles: ["outils"]
+    image: mcr.microsoft.com/playwright:v1.56.1-noble
+    working_dir: /e2e
+    environment:
+      BASE_URL: http://dashboard:5173
+      RGPD_GUARD_TOKEN: dev-token-rgpd-guard
+      PW_OUTPUT: /e2e
+      # Autorité de certification facultative (proxy TLS d'entreprise) pour npm ; fichier vide par défaut.
+      NODE_EXTRA_CA_CERTS: /etc/rgpd-guard/ca.pem
+    volumes:
+      - ./e2e/playwright:/e2e
+      - ${BUILD_CA_BUNDLE:-./config/build/ca-empty.pem}:/etc/rgpd-guard/ca.pem:ro
+    command:
+      - sh
+      - -c
+      - >-
+        npm ci --no-audit --no-fund && npx playwright test; status=$$?;
+        mkdir -p videos && for f in test-results/*/video.webm; do
+        [ -f "$$f" ] && cp "$$f" "videos/$$(basename "$$(dirname "$$f")").webm"; done; exit $$status
+    depends_on:
+      dashboard:
+        condition: service_started
+
+volumes:
+  engine-data:

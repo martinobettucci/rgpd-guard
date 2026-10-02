@@ -155,28 +155,28 @@ Critères d'acceptation : jeton en en-tête pour les hooks et l'API ; session da
 Tests : API directe sans jeton, jeton faux, Host étranger, origine étrangère : refus ; E2E connexion et déconnexion depuis l'accueil.
 
 <a id="RG-013"></a>
-### [ ] RG-013 Dashboard : accueil, connexion et Journal
+### [~] RG-013 Dashboard : accueil, connexion et Journal
 
 Critères d'acceptation : accueil public avec état du moteur, connexion par jeton, Journal paginé et filtrable (type, décision, événement), statistiques par type ; règles de [DESIGN_SYSTEM_APP.md](DESIGN_SYSTEM_APP.md).
 
 Tests : unitaires de composants ; E2E Playwright par le parcours canonique avec captures JPEG.
 
 <a id="RG-014"></a>
-### [ ] RG-014 Dashboard : Bac à sable
+### [~] RG-014 Dashboard : Bac à sable
 
 Critères d'acceptation : saisie d'un texte, choix du profil, surlignage des entités, catégories sensibles, texte pseudonymisé, décision, latence par détecteur.
 
 Tests : unitaires ; E2E Playwright avec captures JPEG et vidéo webm.
 
 <a id="RG-015"></a>
-### [ ] RG-015 Dashboard : Politiques
+### [~] RG-015 Dashboard : Politiques
 
 Critères d'acceptation : édition des actions et seuils par type, liste blanche, motifs de fichiers secrets, enregistrement validé côté serveur, erreurs explicites.
 
 Tests : unitaires ; E2E Playwright (modification puis effet observable dans le bac à sable).
 
 <a id="RG-016"></a>
-### [ ] RG-016 Dashboard : Moteurs
+### [~] RG-016 Dashboard : Moteurs
 
 Critères d'acceptation : état et temps de chargement de chaque détecteur, dernier banc d'évaluation (P/R/F1 par type, latence p50/p95 par profil).
 
@@ -190,7 +190,7 @@ Critères d'acceptation : générateur à graine fixe (Faker fr_FR et en_US) pro
 Tests : unitaires (déterminisme, validité des checksums) ; E2E `./runDev.sh seed` puis Journal non vide.
 
 <a id="RG-018"></a>
-### [ ] RG-018 Conteneurisation dev, staging, prod et lanceurs
+### [~] RG-018 Conteneurisation dev, staging, prod et lanceurs
 
 Critères d'acceptation : `docker-compose.yml` et surcharges `dev`, `staging`, `prod` ; `runDev.sh`, `runStaging.sh`, `runProd.sh` (`up`, `down`, `logs`, `seed`, `test`, `e2e`, `bench`, `token`, `reset`) ; fichiers d'environnement documentés ; ports liés à 127.0.0.1 ; modèles intégrés à l'image, exécution hors ligne ; conteneurs non root.
 

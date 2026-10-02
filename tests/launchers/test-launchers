@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+# @spec docs/BACKLOG.md#RG-018 | docs/DAT.md#deploiement
+# @verifies docs/BACKLOG.md#RG-018 | docs/DAT.md#deploiement
+# Harnais des lanceurs runDev.sh, runStaging.sh et runProd.sh en mode simulation : les scripts sont
+# copiés dans un dépôt temporaire, `docker` et `curl` sont remplacés par des doublures qui journalisent
+# leurs appels, et HOME pointe vers un dossier temporaire. Aucun conteneur n'est lancé.
+set -euo pipefail
+
+source_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd -P)"
+test_root="$(mktemp -d "${TMPDIR:-/tmp}/rgpd-launchers.XXXXXX")"
+output_file="$test_root/output"
+passes=0
+failures=0
+
+cleanup() {
+  rm -rf -- "$test_root"
+}
+trap cleanup EXIT
+
+pass() {
+  printf 'OK   %s\n' "$1"
+  passes=$((passes + 1))
+}
+
+fail() {
+  printf 'FAIL %s\n' "$1" >&2
+  if [[ -s "$output_file" ]]; then
+    sed 's/^/     /' "$output_file" >&2
+  fi
+  failures=$((failures + 1))
+}
+
+check() {
+  local label="$1"
+  shift
+  if "$@"; then pass "$label"; else fail "$label"; fi
+}
+
+# PATH isolé : uniquement les outils nommés ici, jamais un répertoire système complet, pour qu'aucun
+# vrai `docker` ne puisse être atteint (un `compose down` toucherait la pile réelle du même nom).
+tools="$test_root/tools"
+mkdir -p "$tools"
+for tool in bash env dirname sed grep tail head cat cp rm mkdir chmod mv tr od openssl stat; do
+  if path="$(command -v "$tool")"; then
+    ln -s "$path" "$tools/$tool"
+  fi
+done
+
+# Dépôt temporaire : lanceurs, logique commune, fichiers Compose et modèles d'environnement.
+new_repo() {
+  local repo="$test_root/repo-$1"
+  mkdir -p "$repo/scripts" "$repo/config/environments" "$repo/config/build" "$repo/bin" "$repo/home"
+  cp "$source_root"/run{Dev,Staging,Prod}.sh "$repo/"
+  cp "$source_root/scripts/stack.sh" "$repo/scripts/"
+  cp "$source_root"/docker-compose*.yml "$repo/"
+  cp "$source_root/config/environments/dev.env" "$source_root"/config/environments/*.env.example "$repo/config/environments/"
+  : >"$repo/config/build/ca-empty.pem"
+  cat >"$repo/bin/docker" <<'SH'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >>"$CALLS"
+# FAIL_MATCH : sous-chaîne d'appel pour laquelle la doublure échoue (simulation d'un état absent).
+if [[ -n "${FAIL_MATCH:-}" && "$*" == *"$FAIL_MATCH"* ]]; then
+  exit 1
+fi
+exit 0
+SH
+  cat >"$repo/bin/curl" <<'SH'
+#!/usr/bin/env bash
+printf 'curl %s\n' "$*" >>"$CALLS"
+exit 0
+SH
+  chmod +x "$repo/bin/docker" "$repo/bin/curl"
+  printf '%s\n' "$repo"
+}
+
+# Exécute un lanceur avec les doublures en tête du PATH ; stdin facultatif via $INPUT.
+launch() {
+  local repo="$1" launcher="$2"
+  shift 2
+  : >"$output_file"
+  env -i PATH="$repo/bin:$tools" HOME="$repo/home" CALLS="$repo/calls" TMPDIR="$test_root" FAIL_MATCH="${FAIL_MATCH:-}" \
+    "$repo/$launcher" "$@" <<<"${INPUT:-}" >"$output_file" 2>&1
+}
+
+file_mode() {
+  stat -c '%a' "$1" 2>/dev/null || stat -f '%Lp' "$1"
+}
+
+# 1. Commande inconnue : usage et code 2.
+repo="$(new_repo usage)"
+status=0
+launch "$repo" runDev.sh inconnue || status=$?
+check "commande inconnue : code 2" test "$status" -eq 2
+check "commande inconnue : usage nommant le lanceur" grep -q "Usage : runDev.sh <up|down|logs|status|seed|test|e2e|bench|token|reset>" "$output_file"
+
+# 2. Docker absent : message explicite, aucun appel.
+repo="$(new_repo sans-docker)"
+rm "$repo/bin/docker"
+status=0
+launch "$repo" runDev.sh down || status=$?
+check "docker absent : échec" test "$status" -ne 0
+check "docker absent : message explicite" grep -q "Docker est introuvable" "$output_file"
+
+# 3. Jeton staging : fichier créé depuis le modèle, droits 600, secrets générés et stables.
+repo="$(new_repo jeton)"
+launch "$repo" runStaging.sh token
+first="$(tail -n 1 "$output_file")"
+check "staging : fichier d'environnement créé" test -f "$repo/config/environments/staging.env"
+check "staging : fichier d'environnement en 600" test "$(file_mode "$repo/config/environments/staging.env")" = 600
+check "staging : jeton aléatoire de 48 caractères hexadécimaux" grep -Eq '^[0-9a-f]{48}$' <<<"$first"
+check "staging : clé HMAC générée" grep -Eq '^RGPD_GUARD_HMAC_KEY=[0-9a-f]{48}$' "$repo/config/environments/staging.env"
+launch "$repo" runStaging.sh token
+check "staging : jeton stable d'un appel à l'autre" test "$(tail -n 1 "$output_file")" = "$first"
+check "staging : modèle intact" bash -c "! grep -Eq '^RGPD_GUARD_TOKEN=.+' '$repo/config/environments/staging.env.example'"
+
+# 4. Démarrage staging : bon projet Compose, configuration du client, aucun seed.
+repo="$(new_repo staging-up)"
+launch "$repo" runStaging.sh up
+config="$repo/home/.config/rgpd-guard/engine.env"
+check "staging up : succès" grep -q "RGPD Guard (staging) est démarré." "$output_file"
+check "staging up : projet et surcharge staging" grep -qx "compose -p rgpd-guard-staging -f docker-compose.yml -f docker-compose.staging.yml up -d --build" "$repo/calls"
+check "staging up : santé attendue sur le port 18742" grep -q "curl -fsS --noproxy \* http://127.0.0.1:18742/health" "$repo/calls"
+check "staging up : aucun seed" bash -c "! grep -q 'seeder' '$repo/calls'"
+check "staging up : client configuré en 600" test "$(file_mode "$config")" = 600
+check "staging up : client vers 18742 avec le jeton staging" bash -c "grep -qx 'RGPD_GUARD_URL=http://127.0.0.1:18742' '$config' && grep -qx \"RGPD_GUARD_TOKEN=\$(sed -n 's/^RGPD_GUARD_TOKEN=//p' '$repo/config/environments/staging.env')\" '$config'"
+
+# 5. Démarrage dev avec modèles déjà en cache : build, démarrage, seed rejoué par les hooks.
+repo="$(new_repo dev-up)"
+mkdir -p "$repo/models-cache/hub/models--urchade--gliner_multi_pii-v1" "$repo/models-cache/hub/models--convaiinnovations--laya-multilingual"
+launch "$repo" runDev.sh up
+check "dev up : construction du moteur" grep -qx "compose -p rgpd-guard-dev -f docker-compose.yml -f docker-compose.dev.yml build engine" "$repo/calls"
+check "dev up : modèles en cache non retéléchargés" bash -c "! grep -q 'model_store' '$repo/calls'"
+check "dev up : seed rejoué" grep -qx "compose -p rgpd-guard-dev -f docker-compose.yml -f docker-compose.dev.yml --profile outils run --rm seeder" "$repo/calls"
+check "dev up : client vers 8742 avec le jeton seedé" grep -qx "RGPD_GUARD_TOKEN=dev-token-rgpd-guard" "$repo/home/.config/rgpd-guard/engine.env"
+check "dev up : banc existant non relancé" bash -c "grep -q 'exec -T engine test -f /data/bench/latest.json' '$repo/calls' && ! grep -q 'rgpd_guard.bench' '$repo/calls'"
+repo="$(new_repo dev-banc)"
+mkdir -p "$repo/models-cache/hub/models--urchade--gliner_multi_pii-v1" "$repo/models-cache/hub/models--convaiinnovations--laya-multilingual"
+FAIL_MATCH="test -f /data/bench/latest.json" launch "$repo" runDev.sh up
+check "dev up : banc absent, banc lancé une fois" test "$(grep -c 'rgpd_guard.bench' "$repo/calls")" -eq 1
+
+# 6. Dev sans modèles : téléchargement unique dans models-cache/ par l'image du moteur.
+repo="$(new_repo dev-modeles)"
+launch "$repo" runDev.sh up
+check "dev up : téléchargement des modèles épinglés" grep -q "rgpd-guard-engine:dev python -m rgpd_guard.model_store /models-rw" "$repo/calls"
+
+# 7. Garde-fous par environnement.
+repo="$(new_repo garde-fous)"
+status=0
+launch "$repo" runProd.sh seed || status=$?
+check "prod : seed refusé" bash -c "test $status -ne 0 && grep -q 'aucun seed en production' '$output_file'"
+status=0
+launch "$repo" runStaging.sh test || status=$?
+check "staging : tests refusés hors dev" bash -c "test $status -ne 0 && grep -q 'environnement de développement' '$output_file'"
+status=0
+launch "$repo" runProd.sh e2e || status=$?
+check "prod : E2E refusés" bash -c "test $status -ne 0 && grep -q 'pile de développement seedée' '$output_file'"
+
+# 8. Réinitialisation : confirmation exigée hors dev.
+repo="$(new_repo reset)"
+status=0
+INPUT="oui" launch "$repo" runProd.sh reset || status=$?
+check "prod reset : confirmation erronée refusée" bash -c "test $status -ne 0 && ! grep -q 'down -v' '$repo/calls'"
+INPUT="prod" launch "$repo" runProd.sh reset
+check "prod reset : confirmé, données supprimées" grep -qx "compose -p rgpd-guard-prod -f docker-compose.yml -f docker-compose.prod.yml down -v" "$repo/calls"
+launch "$repo" runDev.sh reset
+check "dev reset : sans confirmation" grep -qx "compose -p rgpd-guard-dev -f docker-compose.yml -f docker-compose.dev.yml down -v" "$repo/calls"
+
+printf '\n%s réussis, %s en échec\n' "$passes" "$failures"
+test "$failures" -eq 0

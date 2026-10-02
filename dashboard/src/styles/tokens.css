@@ -1,0 +1,49 @@
+/* @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md | docs/DESIGN_SYSTEM_APP.md */
+/* Tokens du design system P2Enjoy, déclarés une seule fois. Contraste des couples *-on-soft vérifié par scripts/check-contrast.mjs. */
+:root {
+  --color-brand: #23468c;
+  --color-brand-hover: #1b3770;
+  --color-brand-soft: #e8edf6;
+  --color-brand-on-soft: #23468c;
+  --color-success: #238c33;
+  --color-success-soft: #e6f4e8;
+  --color-success-on-soft: #1b6b28;
+  --color-accent: #d9cf4a;
+  --color-accent-soft: #faf7dc;
+  --color-accent-on-soft: #5c5612;
+  --color-danger: #f24141;
+  --color-danger-soft: #fdecec;
+  --color-danger-on-soft: #a61b1b;
+  --color-ink: #0d0d0d;
+  --color-veil: rgb(13 13 13 / 0.4);
+  --color-bg: #f7f8fa;
+  --color-surface: #ffffff;
+  --color-border: #e5e7eb;
+  --color-text-2: #4b5563;
+  --color-text-3: #6b7280;
+  --color-hover: #f3f4f6;
+
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
+  --text-h1: 26px;
+  --text-h2: 20px;
+  --text-h3: 16px;
+  --text-body: 15px;
+  --text-small: 13px;
+
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.06);
+  --size-target: 40px;
+  --sidebar-width: 232px;
+}

@@ -1,0 +1,44 @@
+# @spec docs/BACKLOG.md#RG-018 | docs/DAT.md#deploiement
+# Staging : images de production, ports décalés pour cohabiter avec dev et prod, seed de démonstration possible.
+
+services:
+  engine:
+    build:
+      target: prod
+    image: rgpd-guard-engine:0.1.0
+    env_file: [config/environments/staging.env]
+    read_only: true
+    tmpfs: [/tmp]
+    volumes:
+      - engine-data:/data
+    ports:
+      - "127.0.0.1:${ENGINE_PORT:-18742}:8742"
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      target: prod
+    image: rgpd-guard-dashboard:0.1.0
+    read_only: true
+    tmpfs: [/tmp]
+    ports:
+      - "127.0.0.1:${DASHBOARD_PORT:-18743}:8080"
+    restart: unless-stopped
+
+  seeder:
+    profiles: ["outils"]
+    # Le générateur de corpus utilise Faker, présent uniquement dans l'image de développement.
+    build:
+      context: ./engine
+      target: dev
+    image: rgpd-guard-engine:dev
+    env_file: [config/environments/staging.env]
+    volumes:
+      - ./seeds:/seeds:ro
+    command: ["python", "/seeds/seed_events.py", "--engine", "http://engine:8742"]
+    depends_on:
+      engine:
+        condition: service_healthy
+
+volumes:
+  engine-data:

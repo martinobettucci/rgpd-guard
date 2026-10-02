@@ -1,0 +1,33 @@
+# @spec docs/BACKLOG.md#RG-018 | docs/DAT.md#deploiement
+# Production locale : images figées, système de fichiers en lecture seule, redémarrage automatique, aucune donnée seedée.
+
+services:
+  engine:
+    build:
+      target: prod
+    image: rgpd-guard-engine:0.1.0
+    env_file: [config/environments/prod.env]
+    read_only: true
+    tmpfs: [/tmp]
+    volumes:
+      - engine-data:/data
+    ports:
+      - "127.0.0.1:${ENGINE_PORT:-8742}:8742"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 6g
+
+  dashboard:
+    build:
+      target: prod
+    image: rgpd-guard-dashboard:0.1.0
+    read_only: true
+    tmpfs: [/tmp]
+    ports:
+      - "127.0.0.1:${DASHBOARD_PORT:-8743}:8080"
+    restart: unless-stopped
+
+volumes:
+  engine-data:

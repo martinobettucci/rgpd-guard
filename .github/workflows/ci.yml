@@ -1,5 +1,5 @@
 # @spec docs/BACKLOG.md#RG-000 | docs/AUTOMATION.md#local-guards
-# Intégration continue : rejoue les garde-fous du socle et les contrôles rapides du projet.
+# Intégration continue : garde-fous du socle, moteur, client de hook, E2E Claude Code (faux serveur API) et tableau de bord.
 name: ci
 
 on:
@@ -18,3 +18,54 @@ jobs:
         run: tests/git-hooks/test-hooks
       - name: Contrôles rapides du projet
         run: scripts/project-pre-commit --all
+      - name: Lanceurs en mode simulation
+        run: tests/launchers/test-launchers
+
+  moteur:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: engine
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Dépendances (sans modèles)
+        run: uv sync --group dev
+      - name: Lint et format
+        run: uv run ruff check . ../e2e ../seeds && uv run ruff format --check . ../e2e ../seeds
+      - name: Typage
+        run: uv run mypy
+      - name: Tests unitaires et API
+        run: uv run pytest -p no:cacheprovider
+      - name: Contrats du client de hook
+        run: uv run pytest -p no:cacheprovider ../e2e/claude/test_hook_client.py
+
+  claude-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Claude Code (version du contrat mesuré)
+        run: npm install -g @anthropic-ai/claude-code@2.1.287
+      - name: Validation du plugin et de la marketplace
+        run: claude plugin validate plugins/rgpd-guard && claude plugin validate .
+      - name: E2E Claude Code réel contre le faux serveur API
+        working-directory: engine
+        run: uv sync --group dev && uv run pytest -p no:cacheprovider ../e2e/claude/test_claude_e2e.py
+
+  tableau-de-bord:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci --no-audit --no-fund
+      - name: Typage, tests, textes en dur, contrastes, build
+        run: npm run typecheck && npm test && npm run check:i18n && npm run check:contrast && npm run build
