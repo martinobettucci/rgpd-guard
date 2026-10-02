@@ -161,7 +161,8 @@ cmd_test() {
 cmd_e2e() {
   require_docker
   [[ "$STACK_ENV" == "dev" ]] || fail "les E2E s'exécutent sur la pile de développement seedée."
-  compose ps --status running engine >/dev/null 2>&1 || fail "pile arrêtée : lancez d'abord ./runDev.sh up"
+  # `ps` réussit même sans conteneur : seule une sortie non vide prouve que le moteur tourne.
+  [[ -n "$(compose ps -q --status running engine 2>/dev/null)" ]] || fail "pile arrêtée : lancez d'abord ./runDev.sh up"
   compose --profile outils run --rm e2e
   say "Captures : e2e/playwright/captures/ ; vidéos : e2e/playwright/videos/"
 }

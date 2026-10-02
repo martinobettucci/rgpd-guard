@@ -33,6 +33,7 @@ Toutes les évolutions notables de RGPD Guard sont consignées ici.
 
 - Numéro de version précédé de `version:` pris pour une adresse IP publique.
 - Rechargement à chaud du moteur dev qui scrutait l'environnement virtuel monté et occupait un cœur en continu.
+- `./runDev.sh e2e` pile arrêtée : le garde-fou ne bloquait jamais (`docker compose ps` réussit sans conteneur) et Playwright échouait plus loin sur une erreur réseau ; le refus « pile arrêtée » est désormais immédiat.
 - `./runStaging.sh bench` et `./runProd.sh bench` échouaient faute de générateur seedé : le banc est désormais réservé au dev avec un message explicite, et la page Moteurs indique comment le mesurer quand aucun banc n'est enregistré.
 - `.gitignore` du socle modifié par des règles du projet : restauré à l'identique de l'amont, règles du projet déplacées dans des `.gitignore` imbriqués, caches locaux regroupés sous `.cache/` (`models-cache/` devient `.cache/models/`).
 - Construction impossible depuis un clone neuf : le paquet CA vide utilisé par défaut était exclu par le `.gitignore` ; il est désormais suivi sous `config/ca/empty.pem`.

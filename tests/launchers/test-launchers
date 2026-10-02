@@ -62,6 +62,10 @@ printf '%s\n' "$*" >>"$CALLS"
 if [[ -n "${FAIL_MATCH:-}" && "$*" == *"$FAIL_MATCH"* ]]; then
   exit 1
 fi
+# RUNNING_MATCH : sous-chaîne d'appel pour laquelle la doublure répond un identifiant de conteneur.
+if [[ -n "${RUNNING_MATCH:-}" && "$*" == *"$RUNNING_MATCH"* ]]; then
+  printf '0123456789ab\n'
+fi
 exit 0
 SH
   cat >"$repo/bin/curl" <<'SH'
@@ -78,7 +82,7 @@ launch() {
   local repo="$1" launcher="$2"
   shift 2
   : >"$output_file"
-  env -i PATH="$repo/bin:$tools" HOME="$repo/home" CALLS="$repo/calls" TMPDIR="$test_root" FAIL_MATCH="${FAIL_MATCH:-}" \
+  env -i PATH="$repo/bin:$tools" HOME="$repo/home" CALLS="$repo/calls" TMPDIR="$test_root" FAIL_MATCH="${FAIL_MATCH:-}" RUNNING_MATCH="${RUNNING_MATCH:-}" \
     "$repo/$launcher" "$@" <<<"${INPUT:-}" >"$output_file" 2>&1
 }
 
@@ -170,7 +174,15 @@ check "prod reset : confirmé, données supprimées" grep -qx "compose -p rgpd-g
 launch "$repo" runDev.sh reset
 check "dev reset : sans confirmation" grep -qx "compose -p rgpd-guard-dev -f docker-compose.yml -f docker-compose.dev.yml down -v" "$repo/calls"
 
-# 9. Paquet CA par défaut : un clone neuf doit construire sans proxy, donc le fichier vide cité par le
+# 9. E2E dev : refusés pile arrêtée (aucune sortie de `ps -q`), lancés pile démarrée.
+repo="$(new_repo e2e)"
+status=0
+launch "$repo" runDev.sh e2e || status=$?
+check "dev e2e : refusés pile arrêtée" bash -c "test $status -ne 0 && grep -q 'pile arrêtée' '$output_file' && ! grep -q 'run --rm e2e' '$repo/calls'"
+RUNNING_MATCH="ps -q --status running engine" launch "$repo" runDev.sh e2e
+check "dev e2e : lancés pile démarrée" grep -q -- "--profile outils run --rm e2e" "$repo/calls"
+
+# 10. Paquet CA par défaut : un clone neuf doit construire sans proxy, donc le fichier vide cité par le
 # lanceur et par Compose est suivi par git (aucune règle d'exclusion ne doit l'atteindre).
 default_ca="$(sed -n 's|^export BUILD_CA_BUNDLE="${BUILD_CA_BUNDLE:-$REPO/\(.*\)}"$|\1|p' "$source_root/scripts/stack.sh")"
 check "paquet CA par défaut : chemin lu dans le lanceur" test -n "$default_ca"
