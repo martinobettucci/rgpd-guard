@@ -35,9 +35,9 @@ def _elapsed_ms(started: float) -> float:
 def build_registry(settings: Settings) -> Registry:
     registry = Registry()
     # Détecteurs sans modèle : toujours chargés, leur temps de chargement est mesuré comme celui des autres.
-    for factory in (RulesDetector, SecretsDetector):
+    for detector_class in (RulesDetector, SecretsDetector):
         started = time.perf_counter()
-        detector = factory()
+        detector = detector_class()
         registry.add_detector(detector, _elapsed_ms(started))
     enabled = settings.detectors_list
     for name, (module_name, factory, kind) in MODEL_COMPONENTS.items():
