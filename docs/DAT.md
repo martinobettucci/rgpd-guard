@@ -224,6 +224,14 @@ Le journal d'audit est lui même un traitement de données personnelles (minimis
 - Conteneurs non root, système de fichiers en lecture seule, `HF_HUB_OFFLINE=1`, ports publiés uniquement sur 127.0.0.1 (moteur 8742, dashboard 8743 ; staging 18742 et 18743). Le port 8765, utilisé par le plugin AISafe de Maya Data Privacy, est évité.
 - Journalisation applicative : jamais de valeur détectée, de prompt ni de jeton.
 
+<a id="dashboard"></a>
+## 11 bis. Tableau de bord
+
+- React, Vite, TypeScript, react-router (une URL par destination), lucide-react. Pas de bibliothèque de composants : primitives maison dans `dashboard/src/components/ui/` qui consomment les tokens du design system déclarés une seule fois (`dashboard/src/styles/tokens.css`).
+- Textes centralisés dans `dashboard/src/i18n/fr.ts` (clés stables), contrôle automatique des textes JSX écrits en dur par l'arbre syntaxique TypeScript.
+- Appels `fetch` vers `/api/...` sur la même origine : en dev le serveur Vite, en prod nginx relaient vers le moteur. Le cookie de session reste donc de première partie ; aucune donnée n'est conservée dans le navigateur.
+- Règles d'interface propres au produit : [DESIGN_SYSTEM_APP.md](DESIGN_SYSTEM_APP.md).
+
 <a id="donnees-dev"></a>
 ## 12. Données de développement
 
@@ -240,6 +248,14 @@ Le journal d'audit est lui même un traitement de données personnelles (minimis
 | dev | `docker-compose.yml` + `docker-compose.dev.yml`, `config/environments/dev.env` | jeton fixe de développement, seed automatique, rechargement à chaud |
 | staging | `docker-compose.yml` + `docker-compose.staging.yml`, `config/environments/staging.env` | images de production, seed de démonstration |
 | prod | `docker-compose.yml` + `docker-compose.prod.yml`, `config/environments/prod.env` | aucune donnée seedée |
+
+Images :
+- `engine` : Python 3.12 slim, environnement virtuel construit par uv (torch CPU), utilisateur non root ; cible `prod` avec les modèles intégrés dans `/models` (`HF_HOME`, `HF_HUB_OFFLINE=1`), cible `dev` avec les dépendances de test et le code monté. En dev, les modèles sont téléchargés une fois dans `models-cache/` (ignoré par git) par le lanceur et montés en lecture seule, pour ne pas reconstruire 2 Go à chaque modification.
+- `dashboard` : cible `dev` (serveur Vite), cible `prod` (build statique servi par nginx non root, en-têtes de sécurité, relais `/api` vers le moteur).
+- Le dossier racine de travail (`RGPD_GUARD_WORKSPACE_ROOT`, défaut : dossier personnel) est monté en lecture seule au même chemin dans le moteur, pour les mentions `@` et `/rgpd-guard:scan`.
+- Construction derrière un proxy TLS : `BUILD_CA_BUNDLE` (fichier PEM transmis en secret de construction) et `BUILD_NETWORK=host`, tous deux facultatifs.
+
+Lanceurs `runDev.sh`, `runStaging.sh`, `runProd.sh` : `up`, `down`, `logs`, `status`, `seed`, `test`, `e2e`, `bench`, `token`, `reset`. Le lanceur écrit l'adresse et le jeton de l'environnement démarré dans `~/.config/rgpd-guard/engine.env` (mode 600) : le plugin vise le dernier environnement démarré. En prod, le jeton et la clé HMAC sont générés au premier démarrage s'ils sont absents de `config/environments/prod.env`.
 
 Reprise : la base SQLite vit dans un volume nommé ; sa perte n'efface que le journal et les surcharges de politique (la politique par défaut est dans l'image). Le coffre de pseudonymes est volontairement volatil.
 

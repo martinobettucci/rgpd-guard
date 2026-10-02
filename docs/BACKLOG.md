@@ -157,7 +157,7 @@ Tests : API directe sans jeton, jeton faux, Host étranger, origine étrangère 
 <a id="RG-013"></a>
 ### [ ] RG-013 Dashboard : accueil, connexion et Journal
 
-Critères d'acceptation : accueil public avec état du moteur, connexion par jeton, Journal paginé et filtrable (type, décision, événement), statistiques par type.
+Critères d'acceptation : accueil public avec état du moteur, connexion par jeton, Journal paginé et filtrable (type, décision, événement), statistiques par type ; règles de [DESIGN_SYSTEM_APP.md](DESIGN_SYSTEM_APP.md).
 
 Tests : unitaires de composants ; E2E Playwright par le parcours canonique avec captures JPEG.
 

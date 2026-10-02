@@ -65,16 +65,20 @@ def resolve_mentions(prompt: str, cwd: str, workspace_root: Path | None) -> list
             status = MentionStatus.OUT_OF_REACH if _looks_like_path(raw) else MentionStatus.NOT_A_FILE
             mentions.append(Mention(raw, str(path), status))
             continue
-        if path.is_dir():
-            mentions.append(Mention(raw, str(path), MentionStatus.DIRECTORY))
+        try:
+            if path.is_dir():
+                mentions.append(Mention(raw, str(path), MentionStatus.DIRECTORY))
+                continue
+            if not path.is_file():
+                mentions.append(Mention(raw, str(path), MentionStatus.NOT_A_FILE))
+                continue
+            if path.stat().st_size > MAX_MENTION_BYTES:
+                mentions.append(Mention(raw, str(path), MentionStatus.TOO_LARGE))
+                continue
+            data = path.read_bytes()
+        except OSError:  # droits insuffisants pour le moteur : on ne peut pas vérifier, donc hors de portée
+            mentions.append(Mention(raw, str(path), MentionStatus.OUT_OF_REACH))
             continue
-        if not path.is_file():
-            mentions.append(Mention(raw, str(path), MentionStatus.NOT_A_FILE))
-            continue
-        if path.stat().st_size > MAX_MENTION_BYTES:
-            mentions.append(Mention(raw, str(path), MentionStatus.TOO_LARGE))
-            continue
-        data = path.read_bytes()
         if b"\x00" in data[:8192]:
             mentions.append(Mention(raw, str(path), MentionStatus.BINARY))
             continue

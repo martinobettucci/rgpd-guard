@@ -49,6 +49,19 @@ def test_at_mention_resolved_in_workspace(engine: Engine, settings) -> None:  # 
     assert out_of_reach["decision"] == "block" and "hors du dossier" in out_of_reach["reason"]
 
 
+def test_unreadable_mention_is_out_of_reach(engine: Engine, settings, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    workspace: Path = settings.workspace_root
+    (workspace / "prive.txt").write_text("contenu", encoding="utf-8")
+
+    def refuse(self: Path) -> bytes:
+        raise PermissionError(13, "Permission denied")
+
+    monkeypatch.setattr(Path, "read_bytes", refuse)
+    base = load_fixture("user_prompt_submit_at_mention") | {"cwd": str(workspace)}
+    out = engine.hooks.handle("user-prompt-submit", base | {"prompt": "résume @prive.txt"})
+    assert out["decision"] == "block" and "hors du dossier" in out["reason"]
+
+
 def test_read_of_secret_file_denied(engine: Engine) -> None:
     payload = load_fixture("pre_tool_use_read")
     payload["tool_input"] = {"file_path": "/projet/.env"}
