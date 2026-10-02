@@ -34,6 +34,7 @@ Toutes les évolutions notables de RGPD Guard sont consignées ici.
 
 - Numéro de version précédé de `version:` pris pour une adresse IP publique.
 - Rechargement à chaud du moteur dev qui scrutait l'environnement virtuel monté et occupait un cœur en continu.
+- Chiffres du banc d'évaluation cités par le README et le DAT : remplacés par ceux du banc rejoué après le masquage avant Laya et le passage à spaCy 3.8.0 (latences p50 394 ms en `equilibre`, 496 ms en `max`).
 - Page Moteurs : le temps de chargement n'apparaissait pour aucun composant (masqué par la liste des modèles, et non mesuré pour `rules` et `secrets`) ; il est désormais mesuré et affiché pour chaque composant prêt.
 - Tableau de bord : une durée mesurée sous la demi-milliseconde (p50 du profil Rapide, réinjections du journal) s'affichait « 0 » ; elle s'écrit désormais « < 1 ».
 - `./runDev.sh e2e` pile arrêtée : le garde-fou ne bloquait jamais (`docker compose ps` réussit sans conteneur) et Playwright échouait plus loin sur une erreur réseau ; le refus « pile arrêtée » est désormais immédiat.

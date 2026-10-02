@@ -91,7 +91,7 @@ uv run python ../seeds/generate.py                       # corpus déterministe 
 HF_HOME=../.cache/models HF_HUB_OFFLINE=1 uv run python -m rgpd_guard.bench ../seeds/out/corpus.jsonl --out ../.cache/data/bench/latest.json
 ```
 
-Résultats de référence (4 vCPU) : profil `rapide` F1 0,68 en moins d'une milliseconde (aucun nom de personne), `equilibre` F1 0,98 en 0,75 s (p50), `max` F1 0,99 en 1,0 s (p50). Détail dans [le journal](docs/JOURNAL.md).
+Résultats de référence (banc du 2 octobre 2026, 70 textes, 4 vCPU) : profil `rapide` F1 0,68 en moins d'une milliseconde (aucun nom de personne), `equilibre` F1 0,98 en 394 ms (p50, p95 484 ms), `max` F1 0,985 en 496 ms (p50, p95 624 ms) ; catégories sensibles : rappel 60 % (9 sur 15), précision 69 %. Détail dans [le journal](docs/JOURNAL.md).
 
 ## Installer le plugin dans Claude Code
 

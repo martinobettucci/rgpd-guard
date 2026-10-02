@@ -169,8 +169,8 @@ Pour un fichier source (selon son extension) et pour les blocs de code délimit�
 | Profil | Détecteurs | Cible de latence |
 |---|---|---|
 | `rapide` | rules, secrets | p95 mesuré inférieur à 1 ms |
-| `equilibre` (défaut) | rapide, spacy, laya sur les prompts | p95 mesuré 1,1 s par prompt (4 vCPU) |
-| `max` | equilibre, gliner, laya sur les sorties | p95 mesuré 1,3 s par prompt (4 vCPU) |
+| `equilibre` (défaut) | rapide, spacy, laya sur les prompts | p95 mesuré 484 ms par texte (4 vCPU) |
+| `max` | equilibre, gliner, laya sur les sorties | p95 mesuré 624 ms par texte (4 vCPU) |
 
 Mesures, calibration des seuils et limites : [journal du banc d'évaluation](JOURNAL.md).
 
@@ -264,7 +264,7 @@ Reprise : la base SQLite vit dans un volume nommé ; sa perte n'efface que le jo
 ## 14. Choix techniques et compromis
 
 - Détection locale sur CPU uniquement : aucun appel réseau à l'exécution, modèles intégrés à l'image.
-- spaCy français sous licence LGPL-LR : modèle téléchargé à la construction de l'image, jamais versionné dans le dépôt.
+- spaCy français sous licence LGPL-LR : roue installée à la construction de l'image, jamais versionnée dans le dépôt.
 - Laya ne localise pas les spans : il qualifie le caractère sensible du texte, les spans sont pseudonymisés par les autres détecteurs. Rappel mesuré d'environ 60 % sur les catégories en zero-shot (un diagnostic sans vocabulaire hospitalier peut passer sous le seuil) ; l'affinage est prévu (RG-022).
 - Limites connues : images collées ; contenus injectés sans hook (CLAUDE.md, mémoire, état git, sortie des commandes `!` d'une commande slash) ; télémétrie de Claude Code (désactivable par `DISABLE_TELEMETRY=1`) ; contenu analysé côté serveur par WebFetch ; sortie d'une commande en échec arrêtée par le seul filet `PostToolBatch`, qui laisse le résultat dans la conversation (consigne `/rewind`) ; transcript local qui conserve le texte d'un prompt bloqué ; Edit dont l'`old_string` contient un jeton refusé par Claude Code avant tout hook.
 

@@ -4,11 +4,6 @@ Défauts constatés hors de l'unité en cours, à résoudre par la boucle dédi�
 
 Origine : audit en lecture seule de la v0.1.0 avant la campagne de clôture, constats revérifiés à la main.
 
-## IR-08 Chiffres du banc antérieurs au masquage avant Laya
-
-- Constat : README (latences et rappel des catégories), DAT (§ modèles), BACKLOG RG-022 et JOURNAL citent un banc mesuré avant le commit `422558f`, qui a changé le texte soumis aux classificateurs. Aucun banc postérieur n'est consigné.
-- Concerne : RG-017, README, DAT, JOURNAL.
-
 ## IR-09 Variables d'environnement non documentées ou inutilisées
 
 - Constat :
