@@ -44,7 +44,7 @@ Les types de données et catégories sensibles utilisent les libellés fournis p
 ## 4. Règles de visualisation particulières
 
 - Les aperçus de valeurs du journal sont déjà masqués par le moteur (au plus deux caractères d'origine) ; l'interface ne cherche jamais à les reconstituer.
-- Les scores et probabilités s'affichent avec deux décimales, les latences en millisecondes entières, en chiffres tabulaires.
+- Les scores et probabilités s'affichent avec deux décimales, les latences en millisecondes entières, en chiffres tabulaires. Une durée affichée est toujours mesurée : sous la demi-milliseconde, elle s'écrit « < 1 », jamais « 0 » (DS §14.6).
 - Une mesure de banc absente est nommée « Aucun banc d'évaluation enregistré » (DS §14.6), jamais rendue par zéro.
 
 ## 5. Responsive spécifique

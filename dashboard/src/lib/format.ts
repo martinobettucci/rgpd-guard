@@ -12,6 +12,9 @@ export function formatScore(value: number): string {
   return value.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+// Toute durée affichée est mesurée, donc jamais nulle : sous la demi-milliseconde, l'arrondi entier
+// afficherait « 0 », confondu avec une valeur zéro (DS §14.6). Elle s'écrit « < 1 ».
 export function formatMs(value: number): string {
+  if (value < 0.5) return "<\u00a01";
   return Math.round(value).toLocaleString("fr-FR");
 }

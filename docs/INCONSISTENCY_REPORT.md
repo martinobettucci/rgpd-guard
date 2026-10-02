@@ -9,11 +9,6 @@ Origine : audit en lecture seule de la v0.1.0 avant la campagne de clôture, con
 - Constat : RG-016 exige l'état et le temps de chargement de chaque détecteur. `Engines.tsx:94-95` n'affiche `load_ms` que lorsque `detail` est vide, or spaCy, GLiNER et Laya renvoient toujours un détail ; `rules` et `secrets` sont enregistrés avec `load_ms=0` (`service.py:32-33`).
 - Concerne : RG-016, page Moteurs.
 
-## IR-06 Une latence inférieure à 0,5 ms s'affiche « 0 »
-
-- Constat : `formatMs` (`dashboard/src/lib/format.ts:15`) arrondit la p50 du profil `rapide` (0,2 ms) à « 0 », ce qui affiche une durée nulle et contredit le README (« moins d'une milliseconde »).
-- Concerne : RG-016, DESIGN_SYSTEM §14.6.
-
 ## IR-07 Modèles spaCy 3.7 chargés par spaCy 3.8
 
 - Constat : avertissement W095 à chaque chargement (« trained with spaCy v3.7.0 and may not be 100% compatible with the current version (3.8.16) »).
