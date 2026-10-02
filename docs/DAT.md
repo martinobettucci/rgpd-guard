@@ -66,7 +66,7 @@ Points mesurés qui structurent le design :
 - Write, Edit, MultiEdit et NotebookEdit ne renvoient au modèle qu'un message de succès fixe ;
 - cette version n'expose pas d'outils Grep ni Glob.
 
-Délais : 30 s par défaut sur `UserPromptSubmit` ; un hook qui dépasse son délai est ignoré et le prompt part. Les délais sont donc emboîtés : délai du hook, puis `curl --max-time` plus court, puis échéance interne du moteur plus courte encore, au-delà de laquelle seul le profil `rapide` s'applique.
+Délais : 30 s par défaut sur `UserPromptSubmit` ; un hook qui dépasse son délai est ignoré et le prompt part. Chaque hook déclare donc un délai supérieur au `curl --max-time` de son client, qui bloque lui-même à l'expiration. Pour les hooks qui analysent un texte (`UserPromptSubmit`, `PostToolUse`, `PostToolUseFailure`, `PostToolBatch`), l'échéance interne du moteur (15 s, au-delà de laquelle seuls les détecteurs sans modèle s'appliquent) est elle-même plus courte que ce `max-time` (25 s ou 55 s). `SessionStart`, `SubagentStart` et `PreToolUse` ne lancent aucune détection (consigne de contexte, refus d'un fichier secret, réhydratation) : leur `max-time` plus court (5 s et 10 s) n'a pas à contenir cette échéance. Un test du client vérifie cet emboîtement à partir de `hooks.json`.
 
 Un hook de type `http` laisse passer en cas d'échec de connexion ; le plugin utilise donc un hook `command` qui sait bloquer lui-même (voir [§5](#client-hook)).
 

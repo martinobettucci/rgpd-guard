@@ -34,6 +34,7 @@ Toutes les évolutions notables de RGPD Guard sont consignées ici.
 
 - Numéro de version précédé de `version:` pris pour une adresse IP publique.
 - Rechargement à chaud du moteur dev qui scrutait l'environnement virtuel monté et occupait un cœur en continu.
+- DAT : la règle des délais emboîtés vaut pour les hooks qui analysent un texte ; un test du client la vérifie à partir de `hooks.json`.
 - DAT et critère de RG-012 : routes de session (publiques, la lecture ne renvoie que l'état de connexion) et rétablissement de la politique documentés ; tests d'accès direct étendus aux écritures de la politique.
 - Variables d'environnement : README complété (moteur, client de hook, lanceurs, serveur Vite) et protégé par un test ; réglages `models_dir` et `test_endpoints` jamais lus retirés.
 - Chiffres du banc d'évaluation cités par le README et le DAT : remplacés par ceux du banc rejoué après le masquage avant Laya et le passage à spaCy 3.8.0 (latences p50 394 ms en `equilibre`, 496 ms en `max`).

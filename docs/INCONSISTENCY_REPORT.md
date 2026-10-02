@@ -4,12 +4,6 @@ Défauts constatés hors de l'unité en cours, à résoudre par la boucle dédi�
 
 Origine : audit en lecture seule de la v0.1.0 avant la campagne de clôture, constats revérifiés à la main.
 
-## IR-11 Délais emboîtés : règle énoncée pour tous les hooks
-
-- Constat : le [DAT §3](DAT.md#flux-hooks) affirme que chaque délai contient le suivant, jusqu'à l'échéance du moteur (15 s). Or `curl --max-time` vaut 10 s pour PreToolUse et 5 s pour SessionStart et SubagentStart (`hooks/hooks.json`).
-- Mesure : ces trois gestionnaires (`hooks.py:92-96`, `hooks.py:168`) ne lancent aucune détection ; l'échéance du moteur ne s'applique qu'aux hooks qui analysent un texte (UserPromptSubmit 25 s, PostToolUse 55 s, PostToolUseFailure 25 s, PostToolBatch 55 s).
-- Concerne : DAT.
-
 ## IR-12 SCHEMA.md décalé de la migration
 
 - Constat : `audit_events.event` cite une valeur `analyze` qu'aucun code n'écrit (le bac à sable ne journalise pas) ; les colonnes `id` de `audit_entities` et `policies` (`migrations/001_init.sql:23,36`) manquent.

@@ -1,5 +1,5 @@
-# @spec docs/BACKLOG.md#RG-001 | docs/DAT.md#client-hook
-# @verifies docs/BACKLOG.md#RG-001 | docs/DAT.md#client-hook
+# @spec docs/BACKLOG.md#RG-001 | docs/DAT.md#client-hook | docs/DAT.md#flux-hooks
+# @verifies docs/BACKLOG.md#RG-001 | docs/DAT.md#client-hook | docs/DAT.md#flux-hooks
 """Contrat du client de hook `guard-hook.sh` : relais fidèle, repli fail-closed et fail-open, jeton protégé."""
 
 from __future__ import annotations
@@ -156,3 +156,23 @@ def test_token_not_in_process_arguments(stub: tuple[StubState, str], tmp_path: P
     run_hook("user-prompt-submit", url, {"prompt": "x"}, PATH=f"{wrapper.parent}:{os.environ['PATH']}")
     assert state.seen_headers["X-RGPD-Guard-Token"] == TOKEN
     assert TOKEN not in argv_log.read_text(encoding="utf-8")
+
+
+# Hooks qui lancent une détection ; SessionStart, SubagentStart et PreToolUse n'analysent aucun texte.
+ANALYSING_HOOKS = {"UserPromptSubmit", "PostToolUse", "PostToolUseFailure", "PostToolBatch"}
+
+
+def test_timeouts_nest_for_hooks_that_analyse_text() -> None:
+    """DAT §3 : délai du hook > `curl --max-time` > échéance du moteur, pour chaque hook qui analyse un texte."""
+    from rgpd_guard.config import Settings
+
+    deadline_s = Settings(token="t", hmac_key="k").deadline_ms / 1000
+    hooks = json.loads((SCRIPT.parents[1] / "hooks" / "hooks.json").read_text(encoding="utf-8"))["hooks"]
+    assert ANALYSING_HOOKS <= set(hooks)
+    for event, matchers in hooks.items():
+        for matcher in matchers:
+            for hook in matcher["hooks"]:
+                max_time = float(hook["args"][-1])
+                assert hook["timeout"] > max_time, event
+                if event in ANALYSING_HOOKS:
+                    assert max_time > deadline_s, event
