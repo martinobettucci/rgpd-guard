@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md
+// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md#9.7
 // Message d'état : erreur (role=alert), succès ou information (role=status) (DS §9.7).
 import { CircleAlert, CircleCheck, Info } from "lucide-react";
 import type { ReactNode } from "react";

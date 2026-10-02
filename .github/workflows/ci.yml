@@ -20,6 +20,8 @@ jobs:
         run: scripts/project-pre-commit --all
       - name: Lanceurs en mode simulation
         run: tests/launchers/test-launchers
+      - name: Contrôle des références de traçabilité
+        run: tests/project/test-check-spec-refs
 
   moteur:
     runs-on: ubuntu-latest

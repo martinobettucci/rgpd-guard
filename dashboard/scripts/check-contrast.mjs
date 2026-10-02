@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md
+// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md#9.4 | docs/DESIGN_SYSTEM.md#14.1
 // Mesure le contraste WCAG des couples de tokens effectivement utilisés (DS §9.4, §14.1) : objectif AA 4,5:1.
 import { readFileSync } from "node:fs";
 

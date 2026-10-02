@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md
+// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md#12.1
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";

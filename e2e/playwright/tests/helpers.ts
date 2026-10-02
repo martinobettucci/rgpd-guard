@@ -1,5 +1,5 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM_APP.md
-// @verifies docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md#9.1 | docs/DESIGN_SYSTEM_APP.md#captures
+// @verifies docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md#9.1 | docs/DESIGN_SYSTEM_APP.md#captures
 // Gestes partagés du parcours canonique : arriver par l'accueil, se connecter au clavier, naviguer par la barre latérale.
 import { expect, type Page, type TestInfo } from "@playwright/test";
 import { mkdirSync } from "node:fs";

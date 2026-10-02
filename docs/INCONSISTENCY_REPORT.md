@@ -4,11 +4,6 @@ Défauts constatés hors de l'unité en cours, à résoudre par la boucle dédi�
 
 Origine : audit en lecture seule de la v0.1.0 avant la campagne de clôture, constats revérifiés à la main.
 
-## IR-14 Références `@spec` sans section
-
-- Constat : `dashboard/src/pages/Sandbox.tsx:1`, `dashboard/src/i18n/index.ts:1`, `dashboard/index.html:2` et `dashboard/scripts/check-i18n.mjs:1` citent `docs/DESIGN_SYSTEM.md` sans chapitre, contrairement à CLAUDE.md §5 ; `scripts/check-spec-refs` ne contrôle que les références ancrées et laisse passer.
-- Concerne : RG-000, RG-013, RG-014.
-
 ## IR-15 `THIRD_PARTY_NOTICES.md` incomplet
 
 - Constat : les dépendances npm livrées dans l'image du tableau de bord (React, React Router, Lucide) et l'image de base nginx n'y figurent pas.

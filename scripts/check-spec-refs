@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # @spec docs/BACKLOG.md#RG-000 | docs/AUTOMATION.md#pre-commit-hook
-# Vérifie que chaque référence `docs/FICHIER.md#ancre` citée par @spec ou @verifies désigne une ancre
-# explicite (<a id="ancre">) existant dans le document. Usage : scripts/check-spec-refs [fichiers...]
+# Vérifie les références `docs/FICHIER.md#section` citées par @spec ou @verifies (CLAUDE.md §5) :
+# - chaque référence nomme une section : une référence au seul document est refusée ;
+# - la section existe : ancre explicite (<a id="ancre"></a>) ou, pour un document numéroté sans ancres
+#   explicites (design system global), numéro d'un titre existant (`#14.6` pour « ## 14.6 … »).
+# Usage : scripts/check-spec-refs [fichiers...]
 set -euo pipefail
 repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
@@ -11,21 +14,43 @@ if [[ "$#" -eq 0 ]]; then
 else
   files=("$@")
 fi
-missing=0
+
+anchor_exists() {
+  local doc="$1" anchor="$2"
+  grep -qF "<a id=\"$anchor\"></a>" "$doc" && return 0
+  if [[ "$anchor" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
+    grep -qE "^#+ ${anchor//./\\.}\.? " "$doc" && return 0
+  fi
+  return 1
+}
+
+errors=0
+anchored=()
+for f in "${files[@]}"; do
+  # Documents, données et fichiers du socle (exemples génériques de références) exclus.
+  case "$f" in *.md|*.json|*.txt|LICENSE|LICENSES/*|.githooks/*|scripts/git-hooks/*|tests/git-hooks/*|.claude/*|.codex/*) continue ;; esac
+  [[ -f "$f" ]] || continue
+  while IFS= read -r ref; do
+    if [[ "$ref" == *"#"* ]]; then
+      anchored+=("$ref")
+    else
+      printf 'ERREUR: %s : référence sans section : %s (préciser #ancre ou #numéro de section)\n' "$f" "$ref" >&2
+      errors=$((errors + 1))
+    fi
+  done < <(grep -hoE '@(spec|verifies) .*' "$f" 2>/dev/null | grep -oE 'docs/[A-Za-z_]+\.md(#[A-Za-z0-9_.-]+)?' || true)
+done
+
 while IFS= read -r ref; do
+  [[ -n "$ref" ]] || continue
   doc="${ref%%#*}"
   anchor="${ref#*#}"
   if [[ ! -f "$doc" ]]; then
     printf 'ERREUR: référence vers un document absent : %s\n' "$ref" >&2
-    missing=$((missing + 1))
-  elif ! grep -q "<a id=\"$anchor\"></a>" "$doc"; then
-    printf 'ERREUR: ancre absente : %s\n' "$ref" >&2
-    missing=$((missing + 1))
+    errors=$((errors + 1))
+  elif ! anchor_exists "$doc" "$anchor"; then
+    printf 'ERREUR: section absente : %s\n' "$ref" >&2
+    errors=$((errors + 1))
   fi
-done < <(for f in "${files[@]}"; do
-    # Documents, données et fichiers du socle (exemples génériques de références) exclus.
-    case "$f" in *.md|*.json|LICENSE|LICENSES/*|.githooks/*|scripts/git-hooks/*|tests/git-hooks/*|.claude/*|.codex/*) continue ;; esac
-    [[ -f "$f" ]] && grep -hoE '@(spec|verifies) .*' "$f" 2>/dev/null || true
-  done \
-  | grep -oE 'docs/[A-Za-z_]+\.md#[A-Za-z0-9_.-]+' | sort -u)
-[[ "$missing" -eq 0 ]] || { printf 'ERREUR: %s référence(s) de traçabilité invalide(s)\n' "$missing" >&2; exit 1; }
+done < <(printf '%s\n' ${anchored[@]+"${anchored[@]}"} | sort -u)
+
+[[ "$errors" -eq 0 ]] || { printf 'ERREUR: %s référence(s) de traçabilité invalide(s)\n' "$errors" >&2; exit 1; }

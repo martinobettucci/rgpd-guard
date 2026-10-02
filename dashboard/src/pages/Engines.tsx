@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-016 | docs/BACKLOG.md#RG-017 | docs/DESIGN_SYSTEM.md | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-016 | docs/BACKLOG.md#RG-017 | docs/DESIGN_SYSTEM.md#6.13 | docs/DESIGN_SYSTEM.md#6.14 | docs/DESIGN_SYSTEM.md#14.6 | docs/DESIGN_SYSTEM_APP.md#architecture | docs/DESIGN_SYSTEM_APP.md#visualisation
 // Moteurs : état et temps de chargement des composants, profils, coffre, dernier banc d'évaluation.
 import { CircleCheck, CircleX } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";

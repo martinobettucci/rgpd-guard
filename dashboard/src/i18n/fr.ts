@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/BACKLOG.md#RG-015 | docs/BACKLOG.md#RG-016 | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/BACKLOG.md#RG-015 | docs/BACKLOG.md#RG-016 | docs/DESIGN_SYSTEM.md#11 | docs/DESIGN_SYSTEM_APP.md#terminologie
 // Textes de l'interface, en français (langue par défaut), centralisés par clés stables.
 
 export const fr = {

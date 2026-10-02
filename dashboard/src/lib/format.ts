@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md#14.6 | docs/DESIGN_SYSTEM_APP.md#visualisation
 // Formats d'affichage : dates locales, scores à deux décimales, latences entières.
 
 const dateFormat = new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "medium" });

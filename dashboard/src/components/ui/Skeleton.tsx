@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md
+// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md#6.13
 // Squelette de chargement à la forme du contenu final (DS §6.13).
 import { t } from "../../i18n";
 

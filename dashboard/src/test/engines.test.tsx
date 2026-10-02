@@ -1,5 +1,5 @@
-// @spec docs/BACKLOG.md#RG-016 | docs/DESIGN_SYSTEM.md | docs/DESIGN_SYSTEM_APP.md
-// @verifies docs/BACKLOG.md#RG-016 | docs/DESIGN_SYSTEM.md | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-016 | docs/DESIGN_SYSTEM.md#14.6 | docs/DESIGN_SYSTEM_APP.md#architecture
+// @verifies docs/BACKLOG.md#RG-016 | docs/DESIGN_SYSTEM.md#14.6 | docs/DESIGN_SYSTEM_APP.md#architecture
 // Page Moteurs : état et temps de chargement de chaque composant, composant indisponible, banc absent.
 import { render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";

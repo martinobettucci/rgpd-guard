@@ -1,5 +1,5 @@
-// @spec docs/BACKLOG.md#RG-016 | docs/DESIGN_SYSTEM.md | docs/DESIGN_SYSTEM_APP.md
-// @verifies docs/BACKLOG.md#RG-016 | docs/DESIGN_SYSTEM.md | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-016 | docs/DESIGN_SYSTEM.md#14.6 | docs/DESIGN_SYSTEM_APP.md#visualisation
+// @verifies docs/BACKLOG.md#RG-016 | docs/DESIGN_SYSTEM.md#14.6 | docs/DESIGN_SYSTEM_APP.md#visualisation
 // Formats d'affichage : une durée mesurée n'est jamais rendue par zéro (DS §14.6), latences entières (DS APP §4).
 import { describe, expect, it } from "vitest";
 import { formatMs, formatScore } from "../lib/format";

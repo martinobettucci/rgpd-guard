@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md#5.4 | docs/DESIGN_SYSTEM_APP.md#architecture | docs/DESIGN_SYSTEM_APP.md#responsive
 // Coquille de l'application : barre latérale de premier degré, en-tête de destination, pied de page.
 import { FlaskConical, Gauge, LogOut, ScrollText, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import type { ReactNode } from "react";

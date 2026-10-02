@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/BACKLOG.md#RG-015 | docs/BACKLOG.md#RG-016 | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/BACKLOG.md#RG-015 | docs/BACKLOG.md#RG-016 | docs/DESIGN_SYSTEM.md#13.2 | docs/DESIGN_SYSTEM_APP.md#captures
 // Parcours canonique du tableau de bord : captures JPEG et vidéos webm conservées comme preuves visuelles.
 import { defineConfig, devices } from "@playwright/test";
 

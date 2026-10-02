@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-011 | docs/DESIGN_SYSTEM.md | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-011 | docs/DESIGN_SYSTEM.md#6.14 | docs/DESIGN_SYSTEM.md#8.2 | docs/DESIGN_SYSTEM_APP.md#visualisation | docs/DESIGN_SYSTEM_APP.md#responsive
 // Journal : synthèse, filtres et tableau paginé des événements (aucune valeur brute, aperçus masqués).
 import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";

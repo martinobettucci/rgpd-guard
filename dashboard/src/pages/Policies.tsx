@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-015 | docs/BACKLOG.md#RG-010 | docs/DESIGN_SYSTEM.md | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-015 | docs/BACKLOG.md#RG-010 | docs/DESIGN_SYSTEM.md#6.27 | docs/DESIGN_SYSTEM.md#6.22 | docs/DESIGN_SYSTEM.md#6.23 | docs/DESIGN_SYSTEM_APP.md#composants
 // Politiques : fenêtre en lecture découpée en sections, modale par section (DS §6.27), rétablissement confirmé dans le flux.
 import { Pencil, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";

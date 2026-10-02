@@ -1,4 +1,4 @@
-/* @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md | docs/DESIGN_SYSTEM_APP.md */
+/* @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md#2 | docs/DESIGN_SYSTEM.md#4 | docs/DESIGN_SYSTEM.md#12.1 */
 /* Tokens du design system P2Enjoy, déclarés une seule fois. Contraste des couples *-on-soft vérifié par scripts/check-contrast.mjs. */
 :root {
   --color-brand: #23468c;

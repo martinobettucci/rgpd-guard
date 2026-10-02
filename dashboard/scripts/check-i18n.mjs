@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md
+// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md#11.1
 // Détecte les textes visibles écrits en dur dans le JSX en analysant l'arbre syntaxique TypeScript (DS §11.1) :
 // JsxText, chaînes littérales enfants et attributs visibles (title, aria-label, placeholder, alt).
 // Les textes sans lettre (ponctuation, nombres) sont admis.

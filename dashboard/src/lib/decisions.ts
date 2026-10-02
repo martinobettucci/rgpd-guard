@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md#2.6 | docs/DESIGN_SYSTEM.md#12.5 | docs/DESIGN_SYSTEM_APP.md#composants
 // Correspondance unique décision -> couleur de donnée, icône et libellé (DS §2.6, §12.5).
 import { Ban, CircleCheck, EyeOff, OctagonAlert, RotateCcw, ShieldAlert, TriangleAlert, type LucideIcon } from "lucide-react";
 import { tOr } from "../i18n";

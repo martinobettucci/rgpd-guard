@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md
+// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md#11
 // Accès aux textes par clé, avec substitution de paramètres {nom}.
 import { fr, type MessageKey } from "./fr";
 

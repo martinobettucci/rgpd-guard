@@ -18,7 +18,7 @@ Plugin Claude Code qui bloque ou pseudonymise localement, sur CPU, les données 
 
 - Langue : documentation, interface, messages de commit, commentaires et motifs affichés en français. Identifiants de code en anglais.
 - **Aucun tiret long (U+2014) ni tiret moyen (U+2013)** dans les fichiers du projet, textes comme code. Le tiret n'introduit jamais une précision : utiliser parenthèses, virgules, conjonctions ou deux-points. Contrôle automatique dans `scripts/project-pre-commit`. Les fichiers importés du socle sont exclus de ce contrôle.
-- Traçabilité : `@spec docs/BACKLOG.md#RG-xxx | docs/DAT.md#ancre` en tête de chaque fichier de code, `@verifies` en plus pour les tests. Les ancres du DAT sont les identifiants explicites `<a id="...">`.
+- Traçabilité : `@spec docs/BACKLOG.md#RG-xxx | docs/DAT.md#ancre` en tête de chaque fichier de code, `@verifies` en plus pour les tests. Chaque référence nomme une section : ancre explicite `<a id="...">` pour les documents du projet (DAT, SCHEMA, BACKLOG, DESIGN_SYSTEM_APP), numéro de section pour le design system global qui n'en porte pas (`docs/DESIGN_SYSTEM.md#14.6` désigne « 14.6 Mesure indisponible et valeur zéro »). `scripts/check-spec-refs` refuse une référence sans section ou vers une section absente.
 - Jetons de pseudonymisation : `⟦TYPE_N⟧` (U+27E6, U+27E7). Ne jamais changer ce format sans mettre à jour le moteur, le contexte injecté à Claude et le manuel.
 - Données de test et de démonstration **100 % synthétiques**. Aucun secret d'apparence réelle écrit en dur : les fixtures de secrets sont assemblées à l'exécution à partir de fragments (le hook pre-commit et la protection de push de GitHub les refuseraient, à juste titre).
 - Fichiers du socle repris **sans modification** : leurs empreintes amont sont figées dans `config/socle-files.txt` et contrôlées par `scripts/project-pre-commit`. Une règle propre au projet va dans un fichier compagnon : `CLAUDE_PROJECT.md`, `docs/DESIGN_SYSTEM_APP.md`, ou un `.gitignore` imbriqué à côté de ce qu'il ignore (`config/environments/`, `seeds/`, `e2e/playwright/`).
@@ -34,7 +34,7 @@ Plugin Claude Code qui bloque ou pseudonymise localement, sur CPU, les données 
 | Tester les hooks du socle | `tests/git-hooks/test-hooks` |
 | Tester les lanceurs (simulation, sans Docker) | `tests/launchers/test-launchers` |
 | Contrôles rapides du projet | `scripts/project-pre-commit` (`--all` pour tout le dépôt) |
-| Références de traçabilité | `scripts/check-spec-refs` |
+| Références de traçabilité (et son harnais) | `scripts/check-spec-refs`, `tests/project/test-check-spec-refs` |
 | Pile de développement | `./runDev.sh up`, `down`, `logs`, `status`, `seed`, `test`, `e2e`, `bench`, `token`, `reset` |
 | Staging, production | `./runStaging.sh …`, `./runProd.sh …` : `up`, `down`, `logs`, `status`, `token`, `reset` ; `seed` en staging ; `test`, `e2e`, `bench` réservés au dev |
 | E2E Claude Code (faux serveur API) | `cd engine && uv run pytest ../e2e/claude` |

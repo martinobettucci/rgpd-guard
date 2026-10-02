@@ -1,5 +1,5 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/BACKLOG.md#RG-001 | docs/DESIGN_SYSTEM_APP.md
-// @verifies docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/BACKLOG.md#RG-001 | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/BACKLOG.md#RG-001 | docs/DESIGN_SYSTEM_APP.md#composants | docs/DESIGN_SYSTEM_APP.md#terminologie
+// @verifies docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/BACKLOG.md#RG-001 | docs/DESIGN_SYSTEM_APP.md#composants | docs/DESIGN_SYSTEM_APP.md#terminologie
 // Composants : correspondance des décisions, texte annoté sans interprétation HTML, connexion refusée.
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";

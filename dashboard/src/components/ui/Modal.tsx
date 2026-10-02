@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-015 | docs/DESIGN_SYSTEM.md
+// @spec docs/BACKLOG.md#RG-015 | docs/DESIGN_SYSTEM.md#6.27
 // Modale limitée à une section : dialog natif, focus entrant puis rendu au déclencheur, Échap = annulation (DS §6.27).
 import { useEffect, useRef, type FormEvent, type ReactNode } from "react";
 import { t } from "../../i18n";

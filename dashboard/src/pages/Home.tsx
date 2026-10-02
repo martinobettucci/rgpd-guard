@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-012 | docs/DESIGN_SYSTEM.md | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-012 | docs/DESIGN_SYSTEM.md#6.17 | docs/DESIGN_SYSTEM_APP.md#architecture
 // Accueil : surface autonome avec l'état du moteur et la connexion par jeton (DS §6.17).
 import { LogIn, ShieldCheck } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";

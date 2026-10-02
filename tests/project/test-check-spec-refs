@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# @spec docs/BACKLOG.md#RG-000 | docs/AUTOMATION.md#pre-commit-hook
+# @verifies docs/BACKLOG.md#RG-000 | docs/AUTOMATION.md#pre-commit-hook
+# Harnais de scripts/check-spec-refs sur un dépôt temporaire : ancres explicites, sections numérotées,
+# références sans section ou vers une section absente refusées.
+set -euo pipefail
+
+source_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd -P)"
+test_root="$(mktemp -d "${TMPDIR:-/tmp}/rgpd-spec-refs.XXXXXX")"
+trap 'rm -rf -- "$test_root"' EXIT
+passes=0
+failures=0
+
+repo="$test_root/repo"
+mkdir -p "$repo/docs" "$repo/scripts" "$repo/src"
+cp "$source_root/scripts/check-spec-refs" "$repo/scripts/"
+printf '# DAT\n\n<a id="api"></a>\n## 10. Interfaces\n' >"$repo/docs/DAT.md"
+printf '# Socle\n\n# 14. Règles\n\n## 14.6 Mesure indisponible\n\n## 6.9 bis Curseur\n' >"$repo/docs/DS.md"
+git -C "$repo" init -q
+
+# Balises assemblées à l'exécution : écrites en clair, les en-têtes factices ci-dessous seraient eux-mêmes
+# analysés par le contrôle du dépôt.
+spec="@spec"
+verifies="@verifies"
+
+# Usage : expect <libellé> <code attendu> <motif attendu dans la sortie ou vide> <contenu de l'en-tête>
+expect() {
+  local label="$1" expected="$2" pattern="$3" header="$4" status=0 output
+  printf '// %s\nexport {};\n' "$header" >"$repo/src/file.ts"
+  output="$(cd "$repo" && scripts/check-spec-refs src/file.ts 2>&1)" || status=$?
+  if [[ "$status" -eq "$expected" ]] && { [[ -z "$pattern" ]] || grep -qF -- "$pattern" <<<"$output"; }; then
+    printf 'OK   %s\n' "$label"
+    passes=$((passes + 1))
+  else
+    printf 'FAIL %s (code %s)\n%s\n' "$label" "$status" "$output" >&2
+    failures=$((failures + 1))
+  fi
+}
+
+expect "ancre explicite acceptée" 0 "" "$spec docs/DAT.md#api"
+expect "section numérotée acceptée" 0 "" "$spec docs/DS.md#14.6 | docs/DS.md#14"
+expect "section numérotée suivie d'un suffixe acceptée" 0 "" "$verifies docs/DS.md#6.9"
+expect "référence sans section refusée" 1 "référence sans section : docs/DS.md" "$spec docs/DAT.md#api | docs/DS.md"
+expect "section numérotée absente refusée" 1 "section absente : docs/DS.md#14.7" "$spec docs/DS.md#14.7"
+expect "préfixe de numéro non confondu avec une section" 1 "section absente : docs/DS.md#1" "$spec docs/DS.md#1"
+expect "ancre explicite absente refusée" 1 "section absente : docs/DAT.md#flux" "$spec docs/DAT.md#flux"
+expect "document absent refusé" 1 "document absent : docs/AUCUN.md#x" "$spec docs/AUCUN.md#x"
+
+printf '\n%s réussis, %s en échec\n' "$passes" "$failures"
+test "$failures" -eq 0

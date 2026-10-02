@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-012 | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-012 | docs/DESIGN_SYSTEM_APP.md#architecture
 // Routes : accueil public, quatre destinations réservées à une session ouverte.
 import type { ReactNode } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";

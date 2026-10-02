@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/BACKLOG.md#RG-015 | docs/BACKLOG.md#RG-016 | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/BACKLOG.md#RG-015 | docs/BACKLOG.md#RG-016 | docs/DESIGN_SYSTEM.md#13.1 | docs/DESIGN_SYSTEM_APP.md#architecture | docs/DESIGN_SYSTEM_APP.md#captures
 // @verifies docs/BACKLOG.md#RG-012 | docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/BACKLOG.md#RG-015 | docs/BACKLOG.md#RG-016 | docs/BACKLOG.md#RG-017
 // Parcours canonique : accueil, connexion au clavier, puis uniquement des clics dans l'interface.
 import { expect, test } from "@playwright/test";

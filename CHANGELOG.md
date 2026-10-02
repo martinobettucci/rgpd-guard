@@ -26,6 +26,7 @@ Toutes les évolutions notables de RGPD Guard sont consignées ici.
 
 ### Modifié
 
+- Traçabilité : chaque référence `@spec` / `@verifies` nomme une section (ancres explicites de DESIGN_SYSTEM_APP, numéros de section du design system global) ; `scripts/check-spec-refs` refuse les références sans section, avec son harnais de test.
 - Pipelines spaCy `fr_core_news_md` et `en_core_web_md` 3.8.0, publiés par Explosion pour spaCy 3.8 et installés avec l'extra `nlp` (roues épinglées par empreinte) : fin de l'avertissement W095 émis par les versions 3.7 du Hub Hugging Face.
 - `scripts/project-pre-commit` vérifie que les fichiers importés du socle restent identiques à leurs empreintes amont (`config/socle-files.txt`).
 - Erreurs de validation de l'API traduites en français par type d'erreur ; message d'expression régulière invalide sans texte anglais.

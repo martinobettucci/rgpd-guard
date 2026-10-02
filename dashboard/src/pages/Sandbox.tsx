@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-014 | docs/DESIGN_SYSTEM.md | docs/DESIGN_SYSTEM_APP.md
+// @spec docs/BACKLOG.md#RG-014 | docs/DESIGN_SYSTEM.md#6.9 | docs/DESIGN_SYSTEM.md#1.5 | docs/DESIGN_SYSTEM_APP.md#composants | docs/DESIGN_SYSTEM_APP.md#visualisation
 // Bac à sable : analyse d'un texte saisi, rendu annoté, version pseudonymisée, latences par composant.
 import { ScanSearch } from "lucide-react";
 import { useState, type FormEvent, type ReactNode } from "react";

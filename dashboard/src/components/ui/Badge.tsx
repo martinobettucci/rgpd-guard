@@ -1,4 +1,4 @@
-// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md
+// @spec docs/BACKLOG.md#RG-013 | docs/DESIGN_SYSTEM.md#6.8 | docs/DESIGN_SYSTEM.md#1.5
 // Pilule colorée : fond *-soft, texte *-on-soft, icône et libellé explicite (DS §6.8, §1.5).
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
