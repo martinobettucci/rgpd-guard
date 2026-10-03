@@ -17,6 +17,11 @@ from ..taxonomy import Label
 _EMAIL_RE = re.compile(
     r"(?<![\w.+-])[A-Za-z0-9][A-Za-z0-9._%+-]{0,63}@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,24}\b"
 )
+# URL : identifiants dans l'autorité (utilisateur:motdepasse@hôte) et jetons opaques du chemin ou des paramètres.
+_URL_RE = re.compile(r"\b[a-z][a-z0-9+.-]*://[^\s<>\"'`]+", re.IGNORECASE)
+# Même forme que la règle `url-identifiants` du détecteur de secrets : un mot de passe peut contenir `#` ou `?`.
+_URL_CREDENTIALS_RE = re.compile(r"^[a-z][a-z0-9+.-]*://(?P<userinfo>[^\s/@:]{1,64}:[^\s@/]{1,128})@", re.IGNORECASE)
+_URL_TOKEN_RE = re.compile(r"(?<=[/=])[A-Za-z0-9_-]{20,}(?=[/?#&]|$)")
 _IBAN_RE = re.compile(r"\b[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]{4}){2,7}(?:[ ]?[A-Z0-9]{1,4})?\b")
 _CARD_RE = re.compile(r"(?<![\d-])(?:\d[ -]?){12,18}\d(?![\d-])")
 _NIR_RE = re.compile(
@@ -82,7 +87,12 @@ class RulesDetector:
 
     def detect(self, text: str, ctx: DetectionContext) -> list[Span]:
         spans: list[Span] = []
-        spans += self._emails(text)
+        credentials, url_tokens = self._urls(text)
+        spans += url_tokens
+        # Une adresse email ne chevauche jamais des identifiants d'URL : `motdepasse@hôte` n'en est pas une.
+        spans += [
+            e for e in self._emails(text) if not any(e.start < end and start < e.end for start, end in credentials)
+        ]
         spans += self._ibans(text)
         spans += self._nirs(text)
         spans += self._cards(text)
@@ -94,6 +104,33 @@ class RulesDetector:
         if not ctx.code_mode:
             spans += self._addresses(text)
         return spans
+
+    def _urls(self, text: str) -> tuple[list[tuple[int, int]], list[Span]]:
+        """Positions des identifiants d'une autorité d'URL et spans des jetons opaques du chemin ou des paramètres.
+
+        Le mot de passe d'une autorité est un secret (détecteur `secrets`, jamais contournable) : ces positions
+        servent seulement à écarter le faux email `motdepasse@hôte`. Un jeton opaque mêle minuscules, majuscules
+        et chiffres ; empreintes hexadécimales, UUID et slugs, sans majuscules, ne sont pas signalés (IR-19)."""
+        credentials: list[tuple[int, int]] = []
+        tokens: list[Span] = []
+        for url in _URL_RE.finditer(text):
+            value = url.group().rstrip(".,;:!?)]}")
+            found = _URL_CREDENTIALS_RE.match(value)
+            if found:
+                credentials.append((url.start() + found.start("userinfo"), url.start() + found.end("userinfo")))
+            authority_end = value.find("/", value.find("://") + 3)
+            if authority_end < 0:
+                continue
+            for token in _URL_TOKEN_RE.finditer(value, authority_end):
+                candidate = token.group()
+                if (
+                    any(c.islower() for c in candidate)
+                    and any(c.isupper() for c in candidate)
+                    and any(c.isdigit() for c in candidate)
+                ):
+                    start = url.start() + token.start()
+                    tokens.append(Span(start, start + len(candidate), Label.URL_SENSIBLE, 0.7, self.name))
+        return credentials, tokens
 
     def _emails(self, text: str) -> list[Span]:
         return [Span(m.start(), m.end(), Label.EMAIL, 0.99, self.name, True) for m in _EMAIL_RE.finditer(text)]

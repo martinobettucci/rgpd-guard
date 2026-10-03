@@ -137,7 +137,7 @@ La validation d'Edit précédant les hooks, la consigne injectée à Claude (Ses
 
 | Nom | Type | Profils | Contenu |
 |---|---|---|---|
-| `rules` | spans | tous | email, téléphone (phonenumbers, plus le format français hors métadonnées), IBAN, carte bancaire, NIR, SIREN, SIRET (python-stdnum), IP publique, plaque SIV, date de naissance contextuelle, adresse postale FR, URL sensible |
+| `rules` | spans | tous | email, téléphone (phonenumbers, plus le format français hors métadonnées), IBAN, carte bancaire, NIR, SIREN, SIRET (python-stdnum), IP publique, plaque SIV, date de naissance contextuelle, adresse postale FR, URL sensible (jeton opaque de 20 caractères ou plus mêlant minuscules, majuscules et chiffres dans le chemin ou un paramètre ; le mot de passe d'une URL relève de `secrets` et aucun email n'est vu dans les identifiants d'une URL) |
 | `secrets` | spans | tous | préfixes de fournisseurs, JWT, clés PEM, affectations à forte entropie |
 | `spacy` | spans | `equilibre`, `max` | `fr_core_news_md` et `en_core_web_md` 3.8.0 (pour spaCy 3.8) : personnes, lieux |
 | `gliner` | spans | `max` | `urchade/gliner_multi_pii-v1`, labels zero-shot |
@@ -169,8 +169,8 @@ Pour un fichier source (selon son extension) et pour les blocs de code délimit�
 | Profil | Détecteurs | Cible de latence |
 |---|---|---|
 | `rapide` | rules, secrets | p95 mesuré inférieur à 1 ms |
-| `equilibre` (défaut) | rapide, spacy, laya sur les prompts | p95 mesuré 484 ms par texte (4 vCPU) |
-| `max` | equilibre, gliner, laya sur les sorties | p95 mesuré 624 ms par texte (4 vCPU) |
+| `equilibre` (défaut) | rapide, spacy, laya sur les prompts | p95 mesuré 467 ms par texte (4 vCPU) |
+| `max` | equilibre, gliner, laya sur les sorties | p95 mesuré 647 ms par texte (4 vCPU) |
 
 Mesures, calibration des seuils et limites : [journal du banc d'évaluation](JOURNAL.md).
 

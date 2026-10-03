@@ -74,6 +74,17 @@ def test_read_output_is_pseudonymized(engine: Engine, workspace: Path, tmp_path:
     assert result.sent("⟦IBAN_1⟧") and result.sent("⟦EMAIL_1⟧")
 
 
+def test_url_password_in_read_output_never_sent(engine: Engine, workspace: Path, tmp_path: Path) -> None:
+    # IR-19 : un faux email `motdepasse@hôte` masquait autrefois le secret et laissait passer `admin:Zq8!`.
+    password = "Zq8" + "!vL3pW9xK"  # factice, assemblé à l'exécution
+    target = workspace / "export.txt"
+    target.write_text(f"Source : https://admin:{password}@intranet.exemple.fr/export.csv\n", encoding="utf-8")
+    steps = [[tool_use("Read", {"file_path": str(target)})], [text("Lu.")]]
+    result = run_claude(tmp_path, workspace, "lis export.txt", steps, engine.url)
+    assert len(result.messages_bodies) == 2
+    assert not result.sent("Zq8") and result.sent("⟦SECRET_1⟧")
+
+
 def test_edit_is_rehydrated_on_disk(engine: Engine, workspace: Path, tmp_path: Path) -> None:
     target = workspace / "fiche.txt"
     target.write_text(f"Email : {CANARY_EMAIL}\nStatut : prospect\n", encoding="utf-8")

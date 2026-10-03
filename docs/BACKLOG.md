@@ -42,7 +42,7 @@ Tests : contrats du client (moteur démarré, arrêté, lent, réponse invalide)
 Objectif : détecter sans modèle les identifiants structurés, avec validation par somme de contrôle lorsqu'elle existe.
 
 Critères d'acceptation :
-- EMAIL, TELEPHONE (phonenumbers, FR et international), IBAN (mod 97), CARTE_BANCAIRE (Luhn + préfixes), NIR (clé), SIREN/SIRET (Luhn), IP publique, PLAQUE (SIV), DATE_NAISSANCE (contexte), CODE_POSTAL dans une adresse, URL_SENSIBLE (identifiants ou jetons dans l'URL) ;
+- EMAIL, TELEPHONE (phonenumbers, FR et international), IBAN (mod 97), CARTE_BANCAIRE (Luhn + préfixes), NIR (clé), SIREN/SIRET (Luhn), IP publique, PLAQUE (SIV), DATE_NAISSANCE (contexte), CODE_POSTAL dans une adresse, URL_SENSIBLE (jeton opaque dans le chemin ou un paramètre d'une URL ; le mot de passe d'une URL `utilisateur:motdepasse@hôte` est un secret, RG-003) ;
 - valeurs invalides (checksum faux) non signalées ou signalées avec un score réduit ;
 - exclusions par défaut : IP privées et de bouclage, domaines `example.*`, UUID et empreintes.
 

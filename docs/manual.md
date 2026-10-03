@@ -7,7 +7,8 @@ RGPD Guard est un outil P2Enjoy SAS. Ce manuel s'adresse à la personne qui util
 Avant qu'un prompt ou une sortie d'outil ne parte vers le modèle, un moteur local, exécuté sur le processeur de votre poste, y cherche :
 
 - des données personnelles : noms, adresses email, téléphones, IBAN, numéros de carte, NIR, SIREN et SIRET, adresses IP publiques, plaques d'immatriculation, dates de naissance, adresses postales ;
-- des secrets : clés d'API, jetons, clés privées, mots de passe affectés dans un fichier ;
+- des secrets : clés d'API, jetons, clés privées, mots de passe affectés dans un fichier ou inscrits dans une URL ;
+- des URL porteuses d'un jeton de partage opaque (lien de document, d'invitation) ;
 - des catégories sensibles au sens de l'article 9 du RGPD et voisines : santé, opinions politiques, convictions, orientation sexuelle, origine, appartenance syndicale, condamnations, données RH, mineurs, informations confidentielles.
 
 Selon la situation, il bloque le prompt, remplace les valeurs par des jetons ou se contente d'avertir. Rien n'est envoyé à un service externe pour faire cette analyse.
@@ -152,11 +153,11 @@ La page Moteurs montre chaque composant, son état, ses modèles et leur licence
 
 ## 6. Profils
 
-| Profil | Détecteurs | Usage | Mesure (banc de 70 textes, 4 vCPU) |
+| Profil | Détecteurs | Usage | Mesure (banc de 75 textes, 4 vCPU) |
 |---|---|---|---|
-| Rapide | règles et secrets | identifiants structurés seulement, aucun nom de personne | F1 0,68, moins de 1 ms |
-| Équilibré (défaut) | Rapide, spaCy, Laya sur les prompts | usage courant | F1 0,98, 394 ms (p50) |
-| Maximal | Équilibré, GLiNER, Laya aussi sur les sorties d'outils | données très sensibles | F1 0,985, 496 ms (p50) |
+| Rapide | règles et secrets | identifiants structurés seulement, aucun nom de personne | F1 0,69, moins de 1 ms |
+| Équilibré (défaut) | Rapide, spaCy, Laya sur les prompts | usage courant | F1 0,98, 374 ms (p50) |
+| Maximal | Équilibré, GLiNER, Laya aussi sur les sorties d'outils | données très sensibles | F1 0,986, 466 ms (p50) |
 
 Le profil par défaut se règle côté moteur (`RGPD_GUARD_PROFILE`), et pour Claude Code seulement par l'option `profile` du plugin.
 
@@ -173,7 +174,8 @@ Le profil par défaut se règle côté moteur (`RGPD_GUARD_PROFILE`), et pour Cl
 ## 8. Limites connues
 
 - En profil Rapide, les noms de personnes en texte libre ne sont pas détectés.
-- Catégories sensibles : rappel mesuré de 60 %, aucune reconnaissance des données concernant un mineur. C'est une couche complémentaire, pas une garantie.
+- Un jeton de partage entièrement en minuscules n'est pas reconnu dans une URL ; dans `utilisateur:motdepasse@hôte`, seul le mot de passe est masqué.
+- Catégories sensibles : rappel mesuré de 60 % et précision de 64 %, aucune reconnaissance des données concernant un mineur. C'est une couche complémentaire, pas une garantie.
 - Ne passent par aucun contrôle : les images collées, les contenus que Claude Code injecte sans hook (CLAUDE.md, mémoire, état git, sortie des commandes `!` dans une commande slash), la télémétrie de Claude Code (désactivable avec `DISABLE_TELEMETRY=1`) et le contenu analysé côté serveur par WebFetch.
 
 ## 9. Données conservées

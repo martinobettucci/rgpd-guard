@@ -101,6 +101,16 @@ class Synth:
     def aws_key(self) -> str:
         return "AK" + "IA" + "".join(self.rnd.choice(string.ascii_uppercase + string.digits) for _ in range(16))
 
+    def share_token(self) -> str:
+        # Jeton de partage opaque : minuscule, majuscule et chiffre garantis, puis 21 caractères aléatoires.
+        alphabet = string.ascii_letters + string.digits
+        return (
+            self.rnd.choice(string.ascii_lowercase)
+            + self.rnd.choice(string.ascii_uppercase)
+            + self.rnd.choice(string.digits)
+            + "".join(self.rnd.choice(alphabet) for _ in range(21))
+        )
+
     def password(self) -> str:
         alphabet = string.ascii_letters + string.digits + "!#%&*"
         return "".join(self.rnd.choice(alphabet) for _ in range(14))
@@ -187,6 +197,26 @@ def secret_records(s: Synth) -> list[dict[str, Any]]:
     return records
 
 
+def url_records(s: Synth) -> list[dict[str, Any]]:
+    """URL porteuses d'un mot de passe (secret) ou d'un jeton de partage opaque (URL sensible)."""
+    records = []
+    b = (
+        Builder()
+        .add("Le script d'export échoue : curl https://admin:")
+        .add(s.password(), "SECRET")
+        .add("@intranet.exemple.fr/export.csv, tu vois pourquoi ?")
+    )
+    records.append({"lang": "fr", "kind": "positif", "code": False, "text": b.text, "spans": b.spans, "categories": []})
+    b = (
+        Builder()
+        .add("Here is the shared folder https://drive.exemple.fr/s/")
+        .add(s.share_token(), "URL_SENSIBLE")
+        .add(" with the client files.")
+    )
+    records.append({"lang": "en", "kind": "positif", "code": False, "text": b.text, "spans": b.spans, "categories": []})
+    return records
+
+
 CATEGORY_TEMPLATES: list[tuple[str, str, str]] = [
     ("SANTE", "fr", "{name} a été hospitalisé pour une dépression sévère et suit un traitement depuis mars."),
     ("SANTE", "en", "{name} was diagnosed with type 1 diabetes and needs insulin at work."),
@@ -253,6 +283,13 @@ NEGATIVES: list[tuple[str, bool, str]] = [
     ("fr", False, "La réunion de suivi est fixée au 12/03/2026 à 14 h dans la salle Turing."),
     ("fr", False, "Le contact ⟦EMAIL_1⟧ doit recevoir le devis ⟦PERSONNE_2⟧ demain."),
     ("en", False, "password = changeme and token = <your-token> are placeholders in the template."),
+    ("en", False, "See https://github.com/org/repo/commit/3f786850e387550fdab836ed7e6dc881de23001b for the fix."),
+    ("fr", True, "GET https://api.exemple.fr/v1/clients/123e4567-e89b-12d3-a456-426614174000/commandes\n"),
+    (
+        "fr",
+        False,
+        "Lis l'article https://exemple.fr/blog/comment-proteger-ses-donnees-personnelles-2025 avant la réunion.",
+    ),
 ]
 
 
@@ -265,7 +302,14 @@ def negative_records() -> list[dict[str, Any]]:
 
 def generate(seed: int = DEFAULT_SEED) -> list[dict[str, Any]]:
     s = Synth(seed)
-    records = person_records(s, 36) + company_records(s) + secret_records(s) + category_records(s) + negative_records()
+    records = (
+        person_records(s, 36)
+        + company_records(s)
+        + secret_records(s)
+        + url_records(s)
+        + category_records(s)
+        + negative_records()
+    )
     for index, record in enumerate(records, start=1):
         record["id"] = f"C{index:03d}"
     return records

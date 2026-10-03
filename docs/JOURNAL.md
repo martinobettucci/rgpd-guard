@@ -215,8 +215,13 @@ Le type `URL_SENSIBLE` est prévu par RG-002, la taxonomie et la politique, mais
 
 ### Décision
 
-1. **Le détecteur de règles produit `URL_SENSIBLE`** pour deux formes, sans modèle :
-   - identifiants dans l'autorité (`schéma://utilisateur:motdepasse@hôte`) : le span couvre `utilisateur:motdepasse`, score 0,99 ; les emails que la même URL ferait apparaître dans cette autorité sont écartés par le détecteur lui-même ;
-   - jeton opaque dans un segment de chemin ou une valeur de paramètre : 20 caractères ou plus de `[A-Za-z0-9_-]`, mêlant minuscules, majuscules et chiffres, score 0,7.
-2. **Écartés** : une heuristique d'entropie seule, qui signalerait les slugs d'articles (`comment-proteger-ses-donnees-2025`) ; les empreintes hexadécimales (commits, condensats) et les UUID, sans majuscules, ne sont pas signalés. Un jeton de partage tout en minuscules n'est donc pas reconnu : limite assumée pour éviter les faux positifs.
-3. **Corpus seedé** : deux positifs (identifiants dans l'URL, lien de partage) et trois négatifs (URL de commit, chemin REST avec UUID, slug d'article) ; le banc est rejoué.
+1. **Identifiants dans l'autorité (`schéma://utilisateur:motdepasse@hôte`)** : le mot de passe reste un `SECRET`, produit par la règle `url-identifiants` du détecteur de secrets, et donc jamais contournable par `#rgpd-ok`. Le défaut venait du détecteur de règles, qui voyait un email `motdepasse@hôte` (score 0,99) plus fort que ce secret : il écarte désormais tout email qui chevauche les identifiants d'une URL. Première idée écartée en écrivant le code : un span `URL_SENSIBLE` sur `utilisateur:motdepasse`, qui aurait rendu le mot de passe contournable. Le nom d'utilisateur reste visible.
+2. **Jeton opaque dans un segment de chemin ou une valeur de paramètre** : `URL_SENSIBLE` produit par le détecteur de règles, 20 caractères ou plus de `[A-Za-z0-9_-]` mêlant minuscules, majuscules et chiffres, score 0,7.
+3. **Écartés** : une heuristique d'entropie seule, qui signalerait les slugs d'articles (`comment-proteger-ses-donnees-2025`) ; les empreintes hexadécimales (commits, condensats) et les UUID, sans majuscules, ne sont pas signalés. Un jeton de partage tout en minuscules n'est donc pas reconnu : limite assumée pour éviter les faux positifs.
+4. **Corpus seedé** : deux positifs (mot de passe dans l'URL, lien de partage) et trois négatifs (URL de commit, chemin REST avec UUID, slug d'article) ; le banc est rejoué.
+
+### Vérifications
+
+- Tests du détecteur de règles et du pipeline rouges avant la correction : faux email écarté, mot de passe entier retenu comme `SECRET` (action bloquer, jamais contournable), jetons de chemin et de paramètre signalés, URL de commit, chemin REST avec UUID et slug d'article non signalés.
+- E2E Claude Code réel : un fichier lu contenant `https://admin:<mot de passe>@…` n'envoie au faux serveur API aucun fragment du mot de passe (le test échoue avec le détecteur d'avant).
+- Banc rejoué sur 75 textes (le 3 octobre) : `URL_SENSIBLE` 1 trouvé, 0 faux, 0 manqué ; `SECRET` 4/0/0 ; `rapide` F1 0,688, `equilibre` F1 0,981 (p50 374 ms, p95 467 ms), `max` F1 0,986 (p50 466 ms, p95 647 ms). Catégories : un faux positif de plus, Laya classe « confidentiel » à 1,0 le négatif `GET https://api.exemple.fr/v1/clients/<UUID>/commandes` ; cette catégorie ne fait qu'avertir. Précision des catégories 64 % (9 sur 14), rappel inchangé à 60 %. Le négatif est conservé : il mesure une limite réelle du classificateur en zero-shot, couverte par RG-022.

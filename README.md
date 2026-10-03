@@ -83,7 +83,7 @@ uv run python ../seeds/generate.py                       # corpus déterministe 
 HF_HOME=../.cache/models HF_HUB_OFFLINE=1 uv run python -m rgpd_guard.bench ../seeds/out/corpus.jsonl --out ../.cache/data/bench/latest.json
 ```
 
-Résultats de référence (banc du 2 octobre 2026, 70 textes, 4 vCPU) : profil `rapide` F1 0,68 en moins d'une milliseconde (aucun nom de personne), `equilibre` F1 0,98 en 394 ms (p50, p95 484 ms), `max` F1 0,985 en 496 ms (p50, p95 624 ms) ; catégories sensibles : rappel 60 % (9 sur 15), précision 69 %. Détail dans [le journal](docs/JOURNAL.md).
+Résultats de référence (banc du 3 octobre 2026, 75 textes, 4 vCPU) : profil `rapide` F1 0,69 en moins d'une milliseconde (aucun nom de personne), `equilibre` F1 0,98 en 374 ms (p50, p95 467 ms), `max` F1 0,986 en 466 ms (p50, p95 647 ms) ; catégories sensibles : rappel 60 % (9 sur 15), précision 64 %. Détail dans [le journal](docs/JOURNAL.md).
 
 ## Installer le plugin dans Claude Code
 
@@ -208,6 +208,7 @@ Les options du plugin priment ; à défaut, le client lit ces variables dans l'e
 ## Limites connues
 
 - En profil `rapide`, les noms de personnes en texte libre ne sont pas détectés.
+- URL : un jeton de partage entièrement en minuscules n'est pas reconnu (règle choisie pour ne pas signaler les slugs d'articles ni les empreintes) ; le nom d'utilisateur d'une URL `utilisateur:motdepasse@hôte` reste visible, le mot de passe est masqué comme secret.
 - Catégories sensibles (Laya, zero-shot) : rappel mesuré de 60 %, aucune reconnaissance des données concernant un mineur ; à considérer comme une couche complémentaire (bêta).
 - Non couverts par conception (voir [DAT §14](docs/DAT.md#compromis)) : images collées, contenus injectés par Claude Code sans hook (CLAUDE.md, mémoire, état git), télémétrie de Claude Code (`DISABLE_TELEMETRY=1` recommandé), contenu analysé côté serveur par WebFetch.
 - Une commande en échec dont la sortie contient une donnée arrête la boucle (filet `PostToolBatch`) ; le résultat reste dans la conversation locale et doit être retiré avec `/rewind`.

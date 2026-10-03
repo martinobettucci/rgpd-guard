@@ -109,3 +109,36 @@ def test_address_fr_and_not_in_code() -> None:
     text = "Livrer au 12 bis rue des Lilas, 75011 Paris demain"
     assert labels(text)[Label.ADRESSE][0].startswith("12 bis rue des Lilas")
     assert Label.ADRESSE not in labels(text, code=True)
+
+
+def url_password() -> str:
+    return "Zq8" + "!vL3pW9"  # mot de passe factice assemblé à l'exécution
+
+
+def share_token() -> str:
+    return "Zq8vL3pW9x" + "7Kd2Mn4Rt6Yb1Hc"  # jeton de partage factice
+
+
+def test_url_credentials_yield_no_false_email() -> None:
+    # Le mot de passe relève du détecteur de secrets ; les règles ne doivent pas y voir un email `motdepasse@hôte`.
+    assert labels(f"Export : https://admin:{url_password()}@intranet.exemple.fr/export") == {}
+
+
+def test_url_opaque_token_in_path_or_query() -> None:
+    token = share_token()
+    assert labels(f"Lien : https://drive.exemple.fr/partage/s/{token}")[Label.URL_SENSIBLE] == [token]
+    assert labels(f"https://docs.exemple.fr/d/{token}/edit?usp=sharing")[Label.URL_SENSIBLE] == [token]
+    assert labels(f"https://app.exemple.fr/invite?code={token}&lang=fr")[Label.URL_SENSIBLE] == [token]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "https://github.com/org/repo/commit/3f786850e387550fdab836ed7e6dc881de23001b",
+        "GET https://api.exemple.fr/v1/clients/123e4567-e89b-12d3-a456-426614174000/orders",
+        "https://exemple.fr/blog/comment-proteger-ses-donnees-personnelles-2025",
+        "https://exemple.fr/docs/getting-started?page=2",
+    ],
+)
+def test_url_without_secret_not_flagged(text: str) -> None:
+    assert Label.URL_SENSIBLE not in labels(text)

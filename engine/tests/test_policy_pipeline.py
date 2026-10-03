@@ -115,3 +115,11 @@ def test_classifier_receives_masked_text_and_spans_stay_raw() -> None:
     assert classifier.seen == ["Hospitalisé hier. Virement sur [IBAN] et contact [email]."]
     assert any(f.span.label is Label.IBAN for f in analysis.findings)
     assert [c.action for c in analysis.categories] == [Action.BLOCK]
+
+
+def test_url_credentials_never_partially_kept() -> None:
+    password = "Zq8" + "!vL3pW9"  # factice, assemblé à l'exécution
+    analysis = make_pipeline().analyze(f"Export : https://admin:{password}@intranet.exemple.fr/export", "rapide")
+    # Le mot de passe entier est un secret, jamais contournable ; aucun fragment n'échappe à un faux email.
+    assert [(f.span.label, f.value) for f in analysis.findings] == [(Label.SECRET, password)]
+    assert analysis.findings[0].action is Action.BLOCK
