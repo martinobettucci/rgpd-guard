@@ -1,12 +1,18 @@
-# @spec docs/BACKLOG.md#RG-012 | docs/BACKLOG.md#RG-010 | docs/BACKLOG.md#RG-011 | docs/DAT.md#api | docs/DAT.md#securite
-# @verifies docs/BACKLOG.md#RG-012 | docs/BACKLOG.md#RG-010 | docs/BACKLOG.md#RG-011 | docs/DAT.md#securite
+# @spec docs/BACKLOG.md#RG-012 | docs/BACKLOG.md#RG-010 | docs/BACKLOG.md#RG-011 | docs/BACKLOG.md#RG-016 | docs/DAT.md#api | docs/DAT.md#securite
+# @verifies docs/BACKLOG.md#RG-012 | docs/BACKLOG.md#RG-010 | docs/BACKLOG.md#RG-011 | docs/BACKLOG.md#RG-016 | docs/DAT.md#securite
 """API : refus directs sans droits (en contournant toute interface), sessions, politiques, journal."""
 
 from __future__ import annotations
 
+from itertools import count
+from types import SimpleNamespace
+
+import pytest
 from fastapi.testclient import TestClient
 
 from conftest import TOKEN, load_fixture, make_iban
+from rgpd_guard import service
+from rgpd_guard.config import Settings
 
 
 def test_health_is_public(client: TestClient) -> None:
@@ -122,8 +128,7 @@ def test_engines_status(logged_client: TestClient) -> None:
     body = logged_client.get("/v1/engines").json()
     names = {c["name"] for c in body["components"]}
     assert {"rules", "secrets"} <= names and body["profiles"]["rapide"]["missing"] == []
-    # Chaque composant prêt porte un temps de chargement mesuré, y compris les détecteurs sans modèle.
-    assert all(c["load_ms"] > 0 for c in body["components"] if c["ready"])
+    assert all(isinstance(c["load_ms"], float) for c in body["components"])
     assert body["profiles"]["equilibre"]["classifiers_prompt"] == ["laya"]
     assert body["labels"]["IBAN"] == "IBAN" and body["categories"]["SANTE"] == "santé"
 
@@ -137,3 +142,12 @@ def test_scan_returns_counts_only(client: TestClient, auth_headers: dict[str, st
     outside = client.post("/v1/scan", json={"path": "/etc/hostname"}, headers=auth_headers).json()
     assert outside["status"] == "out_of_reach"
     assert client.post("/v1/scan", json={"path": str(target)}).status_code == 401
+
+
+def test_every_component_load_time_is_measured(monkeypatch: pytest.MonkeyPatch, settings: Settings) -> None:
+    # Horloge factice qui avance d'une milliseconde à chaque lecture : la mesure ne dépend pas de la vitesse de la
+    # machine (rules et secrets se construisent en moins d'une microseconde sur un runner rapide).
+    ticks = count()
+    monkeypatch.setattr(service, "time", SimpleNamespace(perf_counter=lambda: next(ticks) / 1000))
+    registry = service.build_registry(settings)
+    assert {name: status.load_ms for name, status in registry.status.items()} == {"rules": 1.0, "secrets": 1.0}
