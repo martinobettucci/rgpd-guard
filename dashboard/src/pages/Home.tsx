@@ -60,7 +60,12 @@ export function Home() {
           {health === null ? (
             <p className="muted">{t("home.engine.checking")}</p>
           ) : health === "error" ? (
-            <Badge tone="danger">{t("home.engine.offline")}</Badge>
+            <dl className="pairs">
+              <dt>{t("home.engine")}</dt>
+              <dd>
+                <Badge tone="danger">{t("home.engine.offline")}</Badge>
+              </dd>
+            </dl>
           ) : (
             <dl className="pairs">
               <dt>{t("home.engine")}</dt>

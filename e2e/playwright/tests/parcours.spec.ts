@@ -19,6 +19,18 @@ test("accueil : état du moteur, refus d'un jeton faux, connexion", async ({ pag
   await expect(page.getByRole("heading", { level: 1, name: "Journal" })).toBeVisible();
 });
 
+test("accueil : moteur injoignable nommé comme l'état en ligne", async ({ page }, testInfo) => {
+  // État injoignable obtenu en coupant la requête de santé dans le navigateur : la pile reste saine pour la suite.
+  await page.route("**/health", (route) => route.abort());
+  await page.goto("/");
+  const engine = page.getByRole("region", { name: "État du moteur" });
+  await expect(engine.getByText("Moteur injoignable")).toBeVisible();
+  const badge = await engine.getByText("Moteur injoignable").boundingBox();
+  const card = await engine.boundingBox();
+  expect(badge && card && badge.width < card.width / 2).toBe(true);
+  await capture(page, "01-accueil-injoignable", testInfo);
+});
+
 test("journal : synthèse seedée, filtre par décision, pagination", async ({ page }, testInfo) => {
   await login(page);
   const stats = page.getByRole("region", { name: "Synthèse" });

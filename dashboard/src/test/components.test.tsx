@@ -83,6 +83,24 @@ describe("accueil", () => {
 // Commande du plugin, absente du conteneur du tableau de bord (seul dashboard/ y est monté) : test ignoré, jamais faux vert.
 const dashboardCommand = resolve(process.cwd(), "../plugins/rgpd-guard/commands/dashboard.md");
 
+describe("accueil, moteur injoignable", () => {
+  it("présente l'état injoignable comme l'état en ligne : une paire terme et valeur", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => (url.endsWith("/health") ? jsonResponse(503, {}) : jsonResponse(200, { authenticated: false }))),
+    );
+    render(
+      <AuthProvider>
+        <MemoryRouter>
+          <Home />
+        </MemoryRouter>
+      </AuthProvider>,
+    );
+    const badge = await screen.findByText("Moteur injoignable");
+    expect(badge.closest("dd")?.previousElementSibling?.textContent).toBe("État du moteur");
+  });
+});
+
 describe("jeton de connexion", () => {
   it.skipIf(!existsSync(dashboardCommand))("l'accueil et la commande /rgpd-guard:dashboard nomment les mêmes commandes", () => {
     const tokenCommands = (text: string) => [...text.matchAll(/\.\/run(?:Dev|Staging|Prod)\.sh token/g)].map((m) => m[0]);
