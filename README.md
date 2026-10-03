@@ -17,7 +17,7 @@ Contenu de la version : socle d'usine logicielle (méthode, hooks Git, CI) ; plu
 3. Un prompt sensible est bloqué et une version pseudonymisée (`⟦EMAIL_1⟧`, `⟦IBAN_1⟧`...) est proposée ; les sorties d'outils sont pseudonymisées avant d'atteindre le modèle ; les vraies valeurs sont réinjectées localement quand Claude écrit un fichier.
 4. Si le moteur ne répond pas, le plugin bloque par défaut (`fail_mode=closed`).
 
-Architecture détaillée : [docs/DAT.md](docs/DAT.md). Décisions et investigations : [docs/JOURNAL.md](docs/JOURNAL.md).
+Utilisation au quotidien, tableau de bord et dépannage : [manuel](docs/manual.md). Architecture détaillée : [docs/DAT.md](docs/DAT.md). Décisions et investigations : [docs/JOURNAL.md](docs/JOURNAL.md).
 
 ## Stack
 

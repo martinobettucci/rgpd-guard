@@ -20,6 +20,7 @@ Toutes les évolutions notables de RGPD Guard sont consignées ici.
 - Tableau de bord React + Vite aux couleurs P2Enjoy : accueil et connexion par jeton, Journal filtrable et paginé, Bac à sable (texte annoté, version pseudonymisée, latences), Politiques (modale par section, rétablissement confirmé), Moteurs (composants, profils, banc).
 - Conteneurisation : images moteur (dev, prod avec modèles intégrés) et tableau de bord (Vite, nginx non root), Compose dev, staging et prod, lanceurs `runDev.sh`, `runStaging.sh`, `runProd.sh`, fichiers d'environnement commentés, seed rejoué à travers les vrais hooks.
 - Parcours E2E Playwright du tableau de bord (captures JPEG, vidéos webm).
+- Manuel d'utilisation (`docs/manual.md`) : installation, options du plugin, messages affichés et réponses possibles, réinjection, commandes, tableau de bord page par page avec captures, profils mesurés, dépannage, limites et données conservées ; README court du plugin qui y renvoie.
 - Preuves complétées par unité : E2E Claude Code d'un secret dans un prompt (bloqué même avec `#rgpd-ok`), parcours Playwright en profil Maximal (GLiNER), latence par composant et aperçus masqués du journal vérifiés, tests de la page Politiques, harnais de `scripts/project-pre-commit`.
 - Classification des catégories sur une copie du texte où les identifiants structurés et les jetons sont remplacés par des marqueurs neutres (moins de faux positifs, plus de catégories reconnues quand des identifiants sont mêlés au texte).
 - Page Moteurs : classificateurs de catégories affichés pour chaque profil.
