@@ -61,6 +61,7 @@ export const fr = {
   "journal.filter.all": "Tous",
   "journal.events": "Événements",
   "journal.empty": "Aucun événement ne correspond à ces filtres.",
+  "journal.empty.none": "Aucun événement journalisé pour le moment.",
   "journal.col.date": "Date",
   "journal.col.event": "Événement",
   "journal.col.tool": "Outil",

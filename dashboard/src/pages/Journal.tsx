@@ -162,7 +162,7 @@ export function Journal() {
         {page === null ? (
           <Skeleton lines={5} />
         ) : page.events.length === 0 ? (
-          <p className="empty">{t("journal.empty")}</p>
+          <p className="empty">{t(Object.values(filters).some(Boolean) ? "journal.empty" : "journal.empty.none")}</p>
         ) : (
           <div className="table-scroll">
             <table className="data">
