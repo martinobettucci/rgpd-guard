@@ -60,7 +60,10 @@ services:
         npm ci --no-audit --no-fund && npx playwright test; status=$$?;
         mkdir -p videos && for f in test-results/*/video.webm; do
         [ -f "$$f" ] && cp "$$f" "videos/$$(basename "$$(dirname "$$f")").webm"; done; exit $$status
+    # Comme le seed : un moteur recréé (images reconstruites par `test`) recharge ses modèles avant le parcours.
     depends_on:
+      engine:
+        condition: service_healthy
       dashboard:
         condition: service_started
 

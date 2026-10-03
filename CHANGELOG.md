@@ -50,6 +50,7 @@ Toutes les évolutions notables de RGPD Guard sont consignées ici.
 - `./runDev.sh e2e` pile arrêtée : le garde-fou ne bloquait jamais (`docker compose ps` réussit sans conteneur) et Playwright échouait plus loin sur une erreur réseau ; le refus « pile arrêtée » est désormais immédiat.
 - `./runStaging.sh bench` et `./runProd.sh bench` échouaient faute de générateur seedé : le banc est désormais réservé au dev avec un message explicite, et la page Moteurs indique comment le mesurer quand aucun banc n'est enregistré.
 - `.gitignore` du socle modifié par des règles du projet : restauré à l'identique de l'amont, règles du projet déplacées dans des `.gitignore` imbriqués, caches locaux regroupés sous `.cache/` (`models-cache/` devient `.cache/models/`).
+- `./runDev.sh e2e` lancé après `./runDev.sh test` : le moteur, recréé sur les images reconstruites, n'avait pas fini de charger ses modèles et le parcours voyait « Moteur injoignable » ; le service E2E attend désormais un moteur sain, comme le seed.
 - Douze avertissements « corrupted tree cache … Permission denied » à chaque démarrage du moteur : le cache des modèles est rendu lisible par tout utilisateur après téléchargement.
 - Construction impossible depuis un clone neuf : le paquet CA vide utilisé par défaut était exclu par le `.gitignore` ; il est désormais suivi sous `config/ca/empty.pem`.
 - Tableau de bord : liste des types détectés décalée, barre de navigation mobile incomplète, en-tête mobile empilé, faux espace avant la ponctuation dans le texte annoté.
