@@ -117,7 +117,7 @@ Commandes du plugin : `/rgpd-guard:status`, `/rgpd-guard:scan <fichier>`, `/rgpd
 | E2E Claude Code réel (faux serveur API, aucune clé requise) | `cd engine && uv run pytest ../e2e/claude/test_claude_e2e.py` |
 | Hooks du socle | `tests/git-hooks/test-hooks` |
 | Lanceurs `run*.sh` en simulation (faux Docker, aucun conteneur) | `tests/launchers/test-launchers` |
-| Contrôle des références de traçabilité | `tests/project/test-check-spec-refs` |
+| Harnais des contrôles du projet (`project-pre-commit`, références de traçabilité) | `for t in tests/project/test-*; do "$t"; done` |
 | Contrôles rapides du projet | `scripts/project-pre-commit --all` |
 | Validation du plugin et de la marketplace | `claude plugin validate plugins/rgpd-guard && claude plugin validate .` |
 

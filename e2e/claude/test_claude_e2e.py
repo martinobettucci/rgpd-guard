@@ -1,5 +1,5 @@
-# @spec docs/BACKLOG.md#RG-005 | docs/BACKLOG.md#RG-006 | docs/BACKLOG.md#RG-001 | docs/DAT.md#flux
-# @verifies docs/BACKLOG.md#RG-001 | docs/BACKLOG.md#RG-005 | docs/BACKLOG.md#RG-006 | docs/DAT.md#flux
+# @spec docs/BACKLOG.md#RG-005 | docs/BACKLOG.md#RG-006 | docs/BACKLOG.md#RG-001 | docs/BACKLOG.md#RG-003 | docs/DAT.md#flux
+# @verifies docs/BACKLOG.md#RG-001 | docs/BACKLOG.md#RG-002 | docs/BACKLOG.md#RG-003 | docs/BACKLOG.md#RG-004 | docs/BACKLOG.md#RG-005 | docs/BACKLOG.md#RG-006 | docs/DAT.md#flux
 """E2E Claude Code réel + plugin + moteur réel : aucune valeur canari n'atteint le faux serveur API."""
 
 from __future__ import annotations
@@ -45,6 +45,21 @@ def test_sensitive_prompt_never_reaches_api(engine: Engine, workspace: Path, tmp
     assert result.messages_bodies == []
     assert "RGPD Guard a bloqué ce prompt" in result.result_text
     assert "⟦IBAN_1⟧" in result.result_text and iban not in result.result_text
+
+
+def canary_github_token(seed: int) -> str:
+    # Jeton factice assemblé à l'exécution : jamais écrit en clair dans le dépôt (hook pre-commit, protection de push).
+    rnd = random.Random(seed)  # noqa: S311 (données de test)
+    return "gh" + "p_" + "".join(rnd.choice(string.ascii_letters + string.digits) for _ in range(36))
+
+
+def test_secret_in_prompt_blocked_even_with_bypass_prefix(engine: Engine, workspace: Path, tmp_path: Path) -> None:
+    token = canary_github_token(5)
+    for prompt in (f"Utilise ce jeton {token} pour pousser", f"#rgpd-ok Utilise ce jeton {token} pour pousser"):
+        result = run_claude(tmp_path, workspace, prompt, [[text("ok")]], engine.url)
+        assert result.messages_bodies == [], prompt[:9]
+        assert "RGPD Guard a bloqué ce prompt" in result.result_text and token not in result.result_text
+        assert "⟦SECRET_" in result.result_text
 
 
 def test_read_output_is_pseudonymized(engine: Engine, workspace: Path, tmp_path: Path) -> None:

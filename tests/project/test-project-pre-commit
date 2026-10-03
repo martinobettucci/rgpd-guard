@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# @spec docs/BACKLOG.md#RG-000 | docs/AUTOMATION.md#pre-commit-hook
+# @verifies docs/BACKLOG.md#RG-000 | docs/AUTOMATION.md#pre-commit-hook
+# Harnais de scripts/project-pre-commit sur un dépôt temporaire (fichiers indexés) : tirets interdits,
+# fichiers du socle figés par empreinte, JSON et scripts shell invalides.
+set -euo pipefail
+
+source_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd -P)"
+test_root="$(mktemp -d "${TMPDIR:-/tmp}/rgpd-pre-commit.XXXXXX")"
+trap 'rm -rf -- "$test_root"' EXIT
+passes=0
+failures=0
+
+new_repo() {
+  local repo="$test_root/repo-$1"
+  mkdir -p "$repo/scripts" "$repo/config" "$repo/src"
+  cp "$source_root/scripts/project-pre-commit" "$source_root/scripts/check-spec-refs" "$repo/scripts/"
+  git -C "$repo" init -q
+  printf '# Méthode du socle\n' >"$repo/CLAUDE.md"
+  printf '%s CLAUDE.md\n' "$(git -C "$repo" hash-object CLAUDE.md)" >"$repo/config/socle-files.txt"
+  git -C "$repo" add CLAUDE.md config/socle-files.txt
+  printf '%s\n' "$repo"
+}
+
+# Usage : expect <libellé> <dépôt> <code attendu> <motif attendu dans la sortie ou vide>
+expect() {
+  local label="$1" repo="$2" expected="$3" pattern="$4" status=0 output
+  output="$(cd "$repo" && scripts/project-pre-commit 2>&1)" || status=$?
+  if [[ "$status" -eq "$expected" ]] && { [[ -z "$pattern" ]] || grep -qF -- "$pattern" <<<"$output"; }; then
+    printf 'OK   %s\n' "$label"
+    passes=$((passes + 1))
+  else
+    printf 'FAIL %s (code %s)\n%s\n' "$label" "$status" "$output" >&2
+    failures=$((failures + 1))
+  fi
+}
+
+repo="$(new_repo propre)"
+printf 'Texte correct, sans tiret long.\n' >"$repo/src/note.txt"
+git -C "$repo" add src/note.txt
+expect "fichier conforme accepté" "$repo" 0 ""
+
+repo="$(new_repo tiret)"
+printf 'Une précision %s mal introduite.\n' "$(printf '\xe2\x80\x94')" >"$repo/src/note.txt"
+git -C "$repo" add src/note.txt
+expect "tiret long refusé" "$repo" 1 "src/note.txt:1 contient un tiret long ou moyen"
+
+repo="$(new_repo tiret-moyen)"
+printf 'ligne\nUne plage 1%s2.\n' "$(printf '\xe2\x80\x93')" >"$repo/src/note.txt"
+git -C "$repo" add src/note.txt
+expect "tiret moyen refusé, ligne indiquée" "$repo" 1 "src/note.txt:2 contient un tiret long ou moyen"
+
+repo="$(new_repo socle)"
+printf '# Méthode du socle\nRègle ajoutée par le projet.\n' >"$repo/CLAUDE.md"
+git -C "$repo" add CLAUDE.md
+expect "fichier du socle modifié refusé" "$repo" 1 "CLAUDE.md diffère du socle importé"
+
+repo="$(new_repo json)"
+printf '{"cle": }\n' >"$repo/src/donnees.json"
+git -C "$repo" add src/donnees.json
+expect "JSON invalide refusé" "$repo" 1 "src/donnees.json n'est pas un JSON valide"
+
+repo="$(new_repo shell)"
+printf '#!/bin/sh\nif true; then\n' >"$repo/src/outil.sh"
+git -C "$repo" add src/outil.sh
+expect "script shell invalide refusé" "$repo" 1 "src/outil.sh : erreur de syntaxe sh"
+
+printf '\n%s réussis, %s en échec\n' "$passes" "$failures"
+test "$failures" -eq 0

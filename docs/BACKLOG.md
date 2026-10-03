@@ -20,7 +20,7 @@ Critères d'acceptation :
 - `scripts/project-pre-commit` exécute les contrôles rapides propres au projet (tirets interdits, lint Python, validation du plugin) ;
 - intégration continue GitHub Actions rejouant les mêmes contrôles.
 
-Tests : `tests/git-hooks/test-hooks` (unitaire du socle), CI complète (E2E de la chaîne de contrôle).
+Tests : `tests/git-hooks/test-hooks` (unitaire du socle), `tests/project/test-project-pre-commit` et `tests/project/test-check-spec-refs` (unitaires des contrôles du projet), CI complète (E2E de la chaîne de contrôle).
 
 <a id="RG-001"></a>
 ### [~] RG-001 Plugin Claude Code, marketplace et client de hook fail-closed

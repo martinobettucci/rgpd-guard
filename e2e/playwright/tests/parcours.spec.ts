@@ -1,5 +1,5 @@
 // @spec docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/BACKLOG.md#RG-015 | docs/BACKLOG.md#RG-016 | docs/DESIGN_SYSTEM.md#13.1 | docs/DESIGN_SYSTEM_APP.md#architecture | docs/DESIGN_SYSTEM_APP.md#captures
-// @verifies docs/BACKLOG.md#RG-012 | docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/BACKLOG.md#RG-015 | docs/BACKLOG.md#RG-016 | docs/BACKLOG.md#RG-017
+// @verifies docs/BACKLOG.md#RG-007 | docs/BACKLOG.md#RG-008 | docs/BACKLOG.md#RG-009 | docs/BACKLOG.md#RG-010 | docs/BACKLOG.md#RG-011 | docs/BACKLOG.md#RG-012 | docs/BACKLOG.md#RG-013 | docs/BACKLOG.md#RG-014 | docs/BACKLOG.md#RG-015 | docs/BACKLOG.md#RG-016 | docs/BACKLOG.md#RG-017 | docs/BACKLOG.md#RG-018
 // Parcours canonique : accueil, connexion au clavier, puis uniquement des clics dans l'interface.
 import { expect, test } from "@playwright/test";
 import { capture, login, navigate, TOKEN } from "./helpers";
@@ -24,6 +24,10 @@ test("journal : synthèse seedée, filtre par décision, pagination", async ({ p
   const stats = page.getByRole("region", { name: "Synthèse" });
   await expect(stats.getByText("Événements")).toBeVisible();
   await expect(page.getByRole("table")).toBeVisible();
+  // Journal minimisé : aperçus masqués par le moteur, aucune valeur seedée reconstituable (IBAN complet).
+  const tableText = await page.getByRole("table").innerText();
+  expect(tableText).toContain("********");
+  expect(tableText).not.toMatch(/FR\d{2}(?: ?[0-9A-Z]{4}){5}/);
   await capture(page, "03-journal", testInfo);
   await page.getByLabel("Décision").selectOption({ label: "Bloqué" });
   const rows = page.getByRole("table").locator("tbody tr");
@@ -52,7 +56,25 @@ test("bac à sable : texte annoté, version pseudonymisée, catégories", async 
   await expect(result.locator("pre.pseudonymized")).toContainText("⟦EMAIL_");
   await expect(result.locator("pre.pseudonymized")).not.toContainText("paul.durand@");
   await expect(result.getByText("santé")).toBeVisible();
+  // Nom de personne trouvé par spaCy (profil Équilibré) ; latence de chaque composant du profil, puis le total.
+  await expect(result.getByRole("row", { name: /nom de personne.*spacy/ })).toBeVisible();
+  await expect(result.locator("dl.pairs dt")).toHaveText(["rules", "secrets", "spacy", "laya", "total"]);
   await capture(page, "05-bac-a-sable", testInfo);
+});
+
+test("bac à sable en profil Maximal : GLiNER et Laya sur le même texte", async ({ page }, testInfo) => {
+  await login(page);
+  await navigate(page, "Bac à sable");
+  await page
+    .getByLabel("Texte à analyser")
+    .fill("Note RH : Camille Martin, née le 12/03/1990, a été sanctionnée après son arrêt maladie.");
+  await page.getByLabel("Profil").selectOption({ label: "Maximal" });
+  await page.getByRole("button", { name: "Analyser" }).click();
+  const result = page.getByRole("region", { name: "Résultat" });
+  await expect(result.locator("dl.pairs dt")).toHaveText(["rules", "secrets", "spacy", "gliner", "laya", "total"]);
+  await expect(result.getByRole("row", { name: /nom de personne/ }).first()).toBeVisible();
+  await expect(result.locator("pre.pseudonymized")).not.toContainText("Camille Martin");
+  await capture(page, "05-bac-a-sable-maximal", testInfo);
 });
 
 test("politiques : modale par section, effet dans le bac à sable, refus serveur, rétablissement", async ({ page }, testInfo) => {

@@ -34,7 +34,8 @@ Plugin Claude Code qui bloque ou pseudonymise localement, sur CPU, les données 
 | Tester les hooks du socle | `tests/git-hooks/test-hooks` |
 | Tester les lanceurs (simulation, sans Docker) | `tests/launchers/test-launchers` |
 | Contrôles rapides du projet | `scripts/project-pre-commit` (`--all` pour tout le dépôt) |
-| Références de traçabilité (et son harnais) | `scripts/check-spec-refs`, `tests/project/test-check-spec-refs` |
+| Références de traçabilité | `scripts/check-spec-refs` |
+| Harnais des contrôles du projet | `tests/project/test-project-pre-commit`, `tests/project/test-check-spec-refs` |
 | Pile de développement | `./runDev.sh up`, `down`, `logs`, `status`, `seed`, `test`, `e2e`, `bench`, `token`, `reset` |
 | Staging, production | `./runStaging.sh …`, `./runProd.sh …` : `up`, `down`, `logs`, `status`, `token`, `reset` ; `seed` en staging ; `test`, `e2e`, `bench` réservés au dev |
 | E2E Claude Code (faux serveur API) | `cd engine && uv run pytest ../e2e/claude` |

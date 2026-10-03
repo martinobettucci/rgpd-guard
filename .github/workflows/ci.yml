@@ -20,8 +20,8 @@ jobs:
         run: scripts/project-pre-commit --all
       - name: Lanceurs en mode simulation
         run: tests/launchers/test-launchers
-      - name: Contrôle des références de traçabilité
-        run: tests/project/test-check-spec-refs
+      - name: Harnais des contrôles propres au projet
+        run: for harness in tests/project/test-*; do "$harness"; done
 
   moteur:
     runs-on: ubuntu-latest
