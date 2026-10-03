@@ -542,3 +542,12 @@ dialog.modal::backdrop {
   padding: var(--space-2) 0;
   flex-wrap: wrap;
 }
+/* Le texte occupe l'espace libre et passe lui-même à la ligne : la pastille reste alignée à droite sur toutes les
+   lignes ; elle ne descend sous le texte que si la ligne est trop étroite pour 12rem de texte (mobile). */
+.list-rows li > :first-child {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+.list-rows li > .badge {
+  flex: none;
+}

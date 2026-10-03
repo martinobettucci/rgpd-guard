@@ -56,6 +56,7 @@ Les types de données et catégories sensibles utilisent les libellés fournis p
 
 - Sous 1024 px, la barre latérale devient une barre inférieure à libellés visibles (DS §5.4).
 - Le tableau du journal défile dans son propre conteneur avec indication de débordement (DS §8.2).
+- Lignes d'état (composants et profils de la page Moteurs) : le texte occupe l'espace libre et passe à la ligne, la pastille reste alignée à droite. Elle ne descend sous le texte que lorsque la ligne n'offre plus 12rem au texte, ce qui arrive sur mobile à toutes les lignes de profil à la fois. Le parcours Playwright vérifie l'alignement sur bureau.
 
 <a id="ecarts"></a>
 ## 6. Écarts au design system commun

@@ -138,6 +138,14 @@ test("moteurs : composants prêts et profils", async ({ page }, testInfo) => {
   await expect(components.getByText(/^Chargement : /)).toHaveCount(5);
   await expect(components.getByRole("listitem").filter({ hasText: "rules" }).getByText(/^Chargement : <\s1 ms$/)).toBeVisible();
   const profiles = page.getByRole("region", { name: "Profils" });
+  // Sur bureau, chaque pastille d'état reste alignée à droite de sa ligne, même quand le texte passe à la ligne.
+  for (const region of [components, profiles]) {
+    for (const row of await region.locator("li").filter({ has: page.locator(".badge") }).all()) {
+      const line = await row.boundingBox();
+      const badge = await row.locator(".badge").last().boundingBox();
+      expect(line && badge && Math.abs(badge.x + badge.width - (line.x + line.width)) < 2).toBe(true);
+    }
+  }
   await expect(profiles.getByText("Catégories sensibles : laya sur les prompts", { exact: true })).toBeVisible();
   await expect(profiles.getByText("Catégories sensibles : laya sur les prompts et les sorties d'outils")).toBeVisible();
   const bench = page.getByRole("region", { name: "Banc d'évaluation" });
