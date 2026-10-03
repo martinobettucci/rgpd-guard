@@ -28,6 +28,24 @@ def test_clean_prompt_passes(engine: Engine) -> None:
     assert engine.hooks.handle("user-prompt-submit", payload) == {}
 
 
+def test_warn_level_sends_prompt_with_system_message(engine: Engine) -> None:
+    # IP publique : « avertir » sur un prompt dans la politique par défaut.
+    payload = load_fixture("user_prompt_submit") | {"prompt": "Le serveur 81.250.12.34 ne répond plus, une idée ?"}
+    out = engine.hooks.handle("user-prompt-submit", payload)
+    assert "decision" not in out
+    assert (
+        out["systemMessage"].startswith("RGPD Guard (avertissement, prompt envoyé)")
+        and "81.250.12.34" not in out["systemMessage"]
+    )
+
+
+def test_slash_command_arguments_are_checked(engine: Engine) -> None:
+    # UserPromptSubmit reçoit le texte brut d'une commande slash, arguments compris (contrat mesuré, M1).
+    payload = load_fixture("user_prompt_submit") | {"prompt": f"/review vire 100 euros sur {make_iban(7)}"}
+    out = engine.hooks.handle("user-prompt-submit", payload)
+    assert out["decision"] == "block" and "/review vire 100 euros sur ⟦IBAN_" in out["reason"]
+
+
 def test_bypass_prefix_allows_but_never_for_secrets(engine: Engine) -> None:
     base = load_fixture("user_prompt_submit")
     allowed = engine.hooks.handle("user-prompt-submit", base | {"prompt": f"#rgpd-ok mon IBAN {make_iban(2)}"})
