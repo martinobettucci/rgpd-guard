@@ -1,4 +1,5 @@
 # @spec docs/BACKLOG.md#RG-000 | docs/AUTOMATION.md#local-guards
+# @verifies docs/BACKLOG.md#RG-000 | docs/AUTOMATION.md#local-guards
 # Intégration continue : garde-fous du socle, moteur, client de hook, E2E Claude Code (faux serveur API) et tableau de bord.
 name: ci
 

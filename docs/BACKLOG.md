@@ -9,7 +9,7 @@ La spécification technique détaillée vit dans [le DAT](DAT.md) ; ce fichier p
 ## Version 0.1.0
 
 <a id="RG-000"></a>
-### [~] RG-000 Socle d'usine logicielle P2Enjoy
+### [x] RG-000 Socle d'usine logicielle P2Enjoy
 
 Objectif : construire et maintenir le dépôt selon `P2Enjoy/software-factory-base`.
 
@@ -23,7 +23,7 @@ Critères d'acceptation :
 Tests : `tests/git-hooks/test-hooks` (unitaire du socle), `tests/project/test-project-pre-commit` et `tests/project/test-check-spec-refs` (unitaires des contrôles du projet), CI complète (E2E de la chaîne de contrôle).
 
 <a id="RG-001"></a>
-### [~] RG-001 Plugin Claude Code, marketplace et client de hook fail-closed
+### [x] RG-001 Plugin Claude Code, marketplace et client de hook fail-closed
 
 Objectif : distribuer le plugin `rgpd-guard` par une marketplace hébergée dans ce dépôt et relayer chaque événement de hook vers le moteur local.
 
@@ -37,7 +37,7 @@ Critères d'acceptation :
 Tests : contrats du client (moteur démarré, arrêté, lent, réponse invalide) ; E2E Claude Code réel avec faux serveur API.
 
 <a id="RG-002"></a>
-### [~] RG-002 Détecteur de règles et validateurs FR/UE
+### [x] RG-002 Détecteur de règles et validateurs FR/UE
 
 Objectif : détecter sans modèle les identifiants structurés, avec validation par somme de contrôle lorsqu'elle existe.
 
@@ -49,7 +49,7 @@ Critères d'acceptation :
 Tests : unitaires par type (positifs, négatifs, limites) ; E2E via le bac à sable et via le hook de prompt.
 
 <a id="RG-003"></a>
-### [~] RG-003 Détecteur de secrets
+### [x] RG-003 Détecteur de secrets
 
 Objectif : détecter clés API, jetons et clés privées avant tout envoi.
 
@@ -61,7 +61,7 @@ Critères d'acceptation :
 Tests : unitaires (vrais positifs construits, faux positifs courants : hash, UUID, base64 d'image) ; E2E via le hook de prompt.
 
 <a id="RG-004"></a>
-### [~] RG-004 Pseudonymisation réversible et coffre de session
+### [x] RG-004 Pseudonymisation réversible et coffre de session
 
 Objectif : remplacer chaque valeur sensible par un jeton stable `⟦TYPE_N⟧` et pouvoir réinjecter la valeur exacte localement.
 
@@ -73,7 +73,7 @@ Critères d'acceptation :
 Tests : unitaires (aller-retour, collisions, expiration, concurrence) ; E2E réhydratation d'un Edit sur disque.
 
 <a id="RG-005"></a>
-### [~] RG-005 Blocage des prompts et proposition pseudonymisée
+### [x] RG-005 Blocage des prompts et proposition pseudonymisée
 
 Objectif : bloquer un prompt sensible avant qu'il n'atteigne le modèle et proposer une version pseudonymisée prête à copier.
 
@@ -87,7 +87,7 @@ Critères d'acceptation :
 Tests : unitaires de l'adaptateur ; E2E Claude Code réel : le faux serveur API ne reçoit jamais la valeur canari.
 
 <a id="RG-006"></a>
-### [~] RG-006 Hooks d'outils : pseudonymisation des sorties, filet final et réhydratation
+### [x] RG-006 Hooks d'outils : pseudonymisation des sorties, filet final et réhydratation
 
 Objectif : empêcher qu'une sortie d'outil (fichier lu, commande, recherche, MCP) transmette une donnée sensible, sans casser l'édition des fichiers.
 
@@ -101,7 +101,7 @@ Critères d'acceptation :
 Tests : unitaires du parcours de forme et de la réhydratation ; E2E Claude Code réel : Read pseudonymisé, Edit réhydraté sur disque, canari jamais transmis.
 
 <a id="RG-007"></a>
-### [~] RG-007 Détecteur spaCy (FR, EN)
+### [x] RG-007 Détecteur spaCy (FR, EN)
 
 Objectif : localiser les personnes et les lieux dans le texte libre.
 
@@ -110,7 +110,7 @@ Critères d'acceptation : `fr_core_news_md` et `en_core_web_md` chargés au dém
 Tests : unitaires sur corpus FR/EN ; E2E bac à sable profil `equilibre`.
 
 <a id="RG-008"></a>
-### [~] RG-008 Classificateur Laya des catégories sensibles
+### [x] RG-008 Classificateur Laya des catégories sensibles
 
 Objectif : estimer avec des probabilités calibrées si un texte révèle une catégorie sensible (art. 9 RGPD, RH, mineurs, confidentialité).
 
@@ -119,7 +119,7 @@ Critères d'acceptation : `convaiinnovations/laya-multilingual` exécuté sur CP
 Tests : unitaires de la règle d'escalade (classificateur simulé par contrat documenté) et intégration réelle du modèle ; E2E bac à sable.
 
 <a id="RG-009"></a>
-### [~] RG-009 Détecteur GLiNER PII (profil max)
+### [x] RG-009 Détecteur GLiNER PII (profil max)
 
 Objectif : rappel maximal multilingue sur les entités non structurées.
 
@@ -128,7 +128,7 @@ Critères d'acceptation : `urchade/gliner_multi_pii-v1` sur CPU, labels zero-sho
 Tests : unitaires (fusion, fenêtres) ; E2E bac à sable profil `max`.
 
 <a id="RG-010"></a>
-### [~] RG-010 Profils, politiques et liste blanche
+### [x] RG-010 Profils, politiques et liste blanche
 
 Objectif : rendre la décision configurable sans code.
 
@@ -137,7 +137,7 @@ Critères d'acceptation : profils `rapide`, `equilibre`, `max` ; politique par t
 Tests : unitaires de résolution de politique ; API (refus d'une politique invalide) ; E2E page Politiques.
 
 <a id="RG-011"></a>
-### [~] RG-011 Journal d'audit minimisé
+### [x] RG-011 Journal d'audit minimisé
 
 Objectif : tracer les décisions sans créer un nouveau gisement de données personnelles.
 
@@ -146,7 +146,7 @@ Critères d'acceptation : SQLite avec migrations versionnées ([SCHEMA](SCHEMA.m
 Tests : unitaires (aucune valeur brute stockée, purge) ; API ; E2E page Journal.
 
 <a id="RG-012"></a>
-### [~] RG-012 Authentification locale par jeton
+### [x] RG-012 Authentification locale par jeton
 
 Objectif : réserver l'API au client de hook et au dashboard de l'utilisateur.
 
@@ -155,35 +155,35 @@ Critères d'acceptation : jeton en en-tête pour les hooks et l'API ; session da
 Tests : API directe sans jeton, jeton faux, Host étranger, origine étrangère : refus ; E2E connexion et déconnexion depuis l'accueil.
 
 <a id="RG-013"></a>
-### [~] RG-013 Dashboard : accueil, connexion et Journal
+### [x] RG-013 Dashboard : accueil, connexion et Journal
 
 Critères d'acceptation : accueil public avec état du moteur, connexion par jeton, Journal paginé et filtrable (type, décision, événement), statistiques par type ; règles de [DESIGN_SYSTEM_APP.md](DESIGN_SYSTEM_APP.md).
 
 Tests : unitaires de composants ; E2E Playwright par le parcours canonique avec captures JPEG.
 
 <a id="RG-014"></a>
-### [~] RG-014 Dashboard : Bac à sable
+### [x] RG-014 Dashboard : Bac à sable
 
 Critères d'acceptation : saisie d'un texte, choix du profil, surlignage des entités, catégories sensibles, texte pseudonymisé, décision, latence par détecteur.
 
 Tests : unitaires ; E2E Playwright avec captures JPEG et vidéo webm.
 
 <a id="RG-015"></a>
-### [~] RG-015 Dashboard : Politiques
+### [x] RG-015 Dashboard : Politiques
 
 Critères d'acceptation : édition des actions et seuils par type, liste blanche, motifs de fichiers secrets, enregistrement validé côté serveur, erreurs explicites.
 
 Tests : unitaires ; E2E Playwright (modification puis effet observable dans le bac à sable).
 
 <a id="RG-016"></a>
-### [~] RG-016 Dashboard : Moteurs
+### [x] RG-016 Dashboard : Moteurs
 
 Critères d'acceptation : état et temps de chargement de chaque détecteur, dernier banc d'évaluation (P/R/F1 par type, latence p50/p95 par profil).
 
 Tests : unitaires ; E2E Playwright.
 
 <a id="RG-017"></a>
-### [~] RG-017 Seeds déterministes et banc d'évaluation
+### [x] RG-017 Seeds déterministes et banc d'évaluation
 
 Critères d'acceptation : générateur à graine fixe (Faker fr_FR et en_US) produisant un corpus étiqueté, positifs et négatifs ; identifiants à checksum valide mais fictifs ; secrets construits à l'exécution ; événements d'audit créés via le véritable endpoint de hook ; banc d'évaluation par profil.
 
@@ -195,6 +195,8 @@ Tests : unitaires (déterminisme, validité des checksums) ; E2E `./runDev.sh se
 Critères d'acceptation : `docker-compose.yml` et surcharges `dev`, `staging`, `prod` ; `runDev.sh`, `runStaging.sh`, `runProd.sh` (`up`, `down`, `logs`, `status`, `token`, `reset` partout ; `seed` en dev et staging ; `test`, `e2e`, `bench` en dev, seul environnement qui monte le générateur seedé) ; fichiers d'environnement documentés ; ports liés à 127.0.0.1 ; modèles intégrés à l'image, exécution hors ligne ; conteneurs non root.
 
 Tests : unitaire des scripts (mode simulation) ; E2E clone propre puis `./runDev.sh up` sain et seedé.
+
+État : implémenté et vérifié (harnais des lanceurs, `./runDev.sh reset` puis `up` sain et seedé, `test`, `bench` et `e2e` sur l'arbre synchronisé, images staging et prod construites et démarrées, moteur non root hors ligne). Reste à prouver : `./runDev.sh up` complet depuis un clone neuf, téléchargement des modèles compris ; seule la construction d'image depuis un clone neuf a été rejouée (IR-01), le disque de la session ne permettant pas un second cache de modèles.
 
 ## Plus tard
 
