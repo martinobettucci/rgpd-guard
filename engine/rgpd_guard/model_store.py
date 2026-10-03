@@ -80,6 +80,17 @@ def local_path(key: str) -> str:
     )
 
 
+def make_readable(root: Path) -> None:
+    """Rend le cache lisible par tout utilisateur : huggingface_hub écrit certains fichiers (`trees/*.json`) en 600,
+    alors que le moteur tourne sous un autre utilisateur que celui du téléchargement (root dans l'image, compte de
+    l'hôte en dev). Les liens symboliques du cache sont laissés tels quels."""
+    for path in [root, *root.rglob("*")]:
+        if path.is_symlink():
+            continue
+        mode = path.stat().st_mode
+        path.chmod(mode | (0o555 if path.is_dir() else 0o444))
+
+
 def download(cache_dir: Path, groups: list[str]) -> None:
     from huggingface_hub import snapshot_download
 
@@ -100,6 +111,7 @@ def download(cache_dir: Path, groups: list[str]) -> None:
             refs = hub_dir / f"models--{model.repo_id.replace('/', '--')}" / "refs"
             refs.mkdir(parents=True, exist_ok=True)
             (refs / "main").write_text(model.revision, encoding="utf-8")
+    make_readable(cache_dir)
 
 
 def main() -> None:

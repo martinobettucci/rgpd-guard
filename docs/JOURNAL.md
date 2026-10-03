@@ -198,7 +198,7 @@ Le parcours Playwright du bac à sable a échoué : un prompt réaliste (« Mon 
 
 ### Problème
 
-L'audit de clôture a ouvert dix-sept entrées dans [le registre](INCONSISTENCY_REPORT.md). Cette section consigne les décisions prises en les résolvant ; les corrections elles-mêmes sont décrites par leurs commits et le CHANGELOG.
+L'audit de clôture a ouvert dix-sept entrées dans le registre d'incohérences (`docs/INCONSISTENCY_REPORT.md`, supprimé une fois vide comme le veut CLAUDE.md §5) ; une dix-huitième, découverte pendant la boucle, y a été ajoutée puis résolue. Cette section consigne les décisions prises en les résolvant ; les corrections elles-mêmes sont décrites par leurs commits et le CHANGELOG.
 
 ### Décisions
 
